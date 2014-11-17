@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.filipjoelsson.liesapp" version="0.0.1" xmlns="http://www.w3.org/ns/widgets"
+        xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>LiesApp</name>
+    <description>
+        A sample Apache Cordova application that tells you lies.
+    </description>
+    <author email="filip@blueturtle.nu" href="http://lies.hazardous.se">
+        Lies Inc
+    </author>
+    <content src="index.html"/>
+    <access origin="127.0.0.1"/>
+    <access origin="lies.hazardous.se"/>
+</widget>

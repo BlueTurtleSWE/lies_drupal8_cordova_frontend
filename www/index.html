@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Lies!</title>
+    <link rel="stylesheet" href="css/jquery.mobile.structure-1.4.5.min.css" type="text/css"/>
+    <link rel="stylesheet" href="css/jquery.mobile.icons.min.css" type="text/css"/>
+    <link rel="stylesheet" href="css/lies_mobile_theme.css" type="text/css"/>
+    <link rel="stylesheet" href="css/lies.css" type="text/css"/>
+</head>
+<body>
+<img id="spinner" src="img/spinner.gif"/>
+
+<div id="latest-lies" data-role="page" data-theme="a">
+    <img class="lies-logo" src="img/lies.png"/>
+
+    <div id="list-of-lies"></div>
+    <div id="list-toolbar" class="toolbar">
+        <a href="#" class="fixed-button" data-role="button" onClick="focus_submit();">Tell a lie</a>
+    </div>
+</div>
+
+<div id="check-a-liar" class="enclosure" data-role="page" data-theme="a">
+    <img class="lies-logo" src="img/lies.png"/>
+
+    <div id="list-of-liars-lies" class="enclosure"></div>
+    <div class="toolbar">
+        <a href="#" data-role="button" onClick="cancel();">Back to the latest</a>
+    </div>
+</div>
+
+<div id="identity-lies" data-role="page" data-theme="a">
+    <img class="lies-logo" src="img/lies.png"/>
+
+    <div class="enclosure">
+        <input type="hidden" id="next-state" value=""/>
+        <input type="hidden" id="next-state-data" value=""/>
+        <input id="register-alias" type="text" def_label="Your Alias" value="Your Alias" onFocus="focus_input(this);"
+               onBlur="blur_input(this);" data-theme="a"/>
+        <input id="register-email" type="email" def_label="Your Email (new liars)" value="Your Email (new liars)"
+               onFocus="focus_input(this);"
+               onBlur="blur_input(this);" data-theme="a"/>
+        <input id="register-password" type="password" def_label="Your Password" value="Your Password"
+               onFocus="focus_input(this);" onBlur="blur_input(this);" data-theme="a"/>
+        <a href="#" data-role="button" data-theme="a" id="login-liar" onClick="login_liar();">Login Liar</a>
+        <a href="#" data-role="button" data-theme="a" id="create-liar" onClick="create_liar();">New Liar</a>
+        <a href="#" data-role="button" data-theme="a" id="no-liar" onClick="cancel();">Chicken</a>
+    </div>
+</div>
+
+<div id="tell-a-lie" class="enclosure" data-role="page" data-theme="a">
+    <img class="lies-logo" src="img/lies.png"/>
+
+    <div class="enclosure">
+        <a href="#" id="get-your-proof" data-role="button" data-theme="a" onClick="snap_a_pic()">Snap some picture
+            evidence</a>
+        <img id="your-proof" src="img/no_image.png" def_src="img/no_image.png"/>
+        <input id="brand-new-lies" type="text" def_label="Tell me lies, tell me sweet little lies..."
+               onFocus="focus_input(this);" onBlur="blur_input(this);"
+               value="Tell me lies, tell me sweet little lies..." data-theme="a"/>
+        <a href="#" data-role="button" data-theme="a" id="bail-out" onClick="cancel();">Bail out...</a>
+        <a href="#" data-role="button" data-theme="a" id="tell-the-world" onClick="submit_your_lie();">Tell the
+            world!</a>
+    </div>
+</div>
+
+<script type="application/javascript" charset="UTF-8" src="js/jquery-1.11.1.min.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/jquery.base64.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/jquery.mobile-1.4.5.min.js"></script>
+<script type="application/javascript" charset="UTF-8" src="cordova.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/debug.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/secret.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/user.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/lies.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/lies_json_tpls.js"></script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,92 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.lies-logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5%;
+    margin-bottom: 5%;
+    width: 90%;
+    height: auto;
+    max-height: 35%;
+}
+
+#spinner {
+    position: absolute;
+    top: 50%;
+    left: 40%;
+    right: 40%;
+    z-index: 20000;
+    height: auto;
+    width: 20%;
+}
+
+.enclosure {
+    display: block;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#list-of-lies,
+#list-of-liars-lies {
+    padding: 5%;
+    padding-bottom: 40%;
+}
+
+.item-lie {
+    display: box;
+    margin: 1em;
+    padding: 0;
+    clear: both;
+
+}
+
+.item-title {
+    display: box;
+    width: 100%;
+    padding: auto;
+}
+
+.item-proof {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.item-liar {
+    display: block;
+    float: right;
+}
+
+.toolbar {
+    position: absolute;
+    top: 87%;
+    left: 3%;
+    right: 3%;
+    height: 10%;
+    z-index: 20000;
+}
+
+#list-toolbar {
+    display: none;
+}
+
+.fixed-button {
+    /*
+        width: 90%;
+        height: auto;*/
+}
+
+#your-proof {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10%;
+    margin-bottom: 10%;
+    width: 80%;
+    height: auto;
+}
