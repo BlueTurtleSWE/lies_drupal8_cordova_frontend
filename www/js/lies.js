@@ -39,6 +39,8 @@ document.addEventListener('deviceready', function () {
     if (!window.btoa) window.btoa = $.base64.btoa;
     if (!window.atob) window.atob = $.base64.atob;
 
+    document.addEventListener('backbutton', cancel, false); // Fix the back button on Android
+
     if (window.localStorage) {
         var user_hal_loaded = JSON.parse(window.localStorage.getItem("user"));
         if (user_hal_loaded != null) {
