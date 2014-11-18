@@ -15,7 +15,7 @@ html, body {
 }
 
 #spinner {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 40%;
     right: 40%;
@@ -62,25 +62,6 @@ html, body {
     float: right;
 }
 
-.toolbar {
-    position: absolute;
-    top: 87%;
-    left: 3%;
-    right: 3%;
-    height: 10%;
-    z-index: 20000;
-}
-
-#list-toolbar {
-    display: none;
-}
-
-.fixed-button {
-    /*
-        width: 90%;
-        height: auto;*/
-}
-
 #your-proof {
     display: block;
     margin-left: auto;
@@ -98,8 +79,6 @@ html, body {
     bottom: 0;
     height: auto;
     width: 100%;
-    /*background-color: grey;*/
-
 }
 
 #app-toolbar .ui-btn {

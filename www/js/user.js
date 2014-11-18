@@ -1,5 +1,5 @@
 /**
- * Created by filipjoelsson on 2014-11-16.
+ * A user class for use with a REST based frontend for Drupal 8
  */
 
 

@@ -43,8 +43,7 @@
         <input id="register-alias" type="text" def_label="Your Alias" value="Your Alias" onFocus="focus_input(this);"
                onBlur="blur_input(this);" data-theme="a"/>
         <input id="register-email" type="email" def_label="Your Email (new liars)" value="Your Email (new liars)"
-               onFocus="focus_input(this);"
-               onBlur="blur_input(this);" data-theme="a"/>
+               onFocus="focus_input(this);" onBlur="blur_input(this);" data-theme="a"/>
         <input id="register-password" type="password" def_label="Your Password" value="Your Password"
                onFocus="focus_input(this);" onBlur="blur_input(this);" data-theme="a"/>
         <a href="#" id="btn-login" data-role="button" data-theme="a" onClick="login_liar();">Login Liar</a>
@@ -64,13 +63,14 @@
         <input id="brand-new-lies" type="text" def_label="Tell me lies, tell me sweet little lies..."
                onFocus="focus_input(this);" onBlur="blur_input(this);"
                value="Tell me lies, tell me sweet little lies..." data-theme="a"/>
-        <a href="#" data-role="button" data-theme="a" id="tell-the-world" onClick="submit_your_lie();">Tell the
+        <a href="#" id="tell-the-world" data-role="button" data-theme="a" onClick="submit_your_lie();">Tell the
             world!</a>
     </div>
 </div>
 
 <script type="application/javascript" charset="UTF-8" src="js/jquery-1.11.1.min.js"></script>
 <script type="application/javascript" charset="UTF-8" src="js/jquery.base64.js"></script>
+<script type="application/javascript" charset="UTF-8" src="js/button_stuck_fix.js"></script>
 <script type="application/javascript" charset="UTF-8" src="js/jquery.mobile-1.4.5.min.js"></script>
 <script type="application/javascript" charset="UTF-8" src="cordova.js"></script>
 <script type="application/javascript" charset="UTF-8" src="js/debug.js"></script>
