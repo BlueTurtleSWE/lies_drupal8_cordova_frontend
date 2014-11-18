@@ -282,6 +282,11 @@ function login_liar_cb (msg){
         return;
     }
 
+    // Save user data
+    if (window.localStorage) {
+        window.localStorage.setItem('user', g_curr_user.getJSON());
+    }
+
     // Now find out where to go!
     var next_state = parseInt($('#next-state').val());
     var data = decodeURI($('#next-state-data').val());
