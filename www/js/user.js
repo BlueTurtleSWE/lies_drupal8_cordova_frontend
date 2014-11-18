@@ -14,9 +14,9 @@ const user_hal_tpl = {
 
 // User is a value object, it will either GET, POST or PATCH on initialization
 // and it can't be changed after initialization has finished
-function user_class(i_user) {
+function User(i_user) {
     if (typeof(i_user) != "object") {
-        throw(new Error("Invalid parameter when initializing user_class\n"+dump(i_user)));
+        throw(new Error("Invalid parameter when initializing User\n"+dump(i_user)));
     }
     // i_user is an object with one of the following setups
     // 1) A full hal object (no callback possible, instantly ready)

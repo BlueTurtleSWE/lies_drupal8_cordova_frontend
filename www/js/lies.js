@@ -50,7 +50,7 @@ document.addEventListener('deviceready', function () {
     if (window.localStorage) {
         var user_data_loaded = JSON.parse(window.localStorage.getItem("user"));
         if (user_data_loaded != null) {
-            g_curr_user = new user_class(user_data_loaded);
+            g_curr_user = new User(user_data_loaded);
         }
     }
 
@@ -106,7 +106,7 @@ function focus_stalk(stalkee) {
         console.log("Exstracted uid "+stalk_uid+" - let's check it out");
     }
 
-    g_stalk_user = new user_class({uid : stalk_uid, cb : stalk_display });
+    g_stalk_user = new User({uid : stalk_uid, cb : stalk_display });
 }
 
 function focus_login(next_state, data) {
@@ -269,7 +269,7 @@ function create_liar() {
 
     u_data.cb = login_liar_cb;
     u_data.edit = true;
-    g_curr_user = new user_class(u_data);
+    g_curr_user = new User(u_data);
 }
 
 function login_liar() {
@@ -278,7 +278,7 @@ function login_liar() {
 
     u_data.cb = login_liar_cb;
     u_data.edit = false;
-    g_curr_user = new user_class(u_data);
+    g_curr_user = new User(u_data);
 }
 
 function login_liar_cb (msg){
