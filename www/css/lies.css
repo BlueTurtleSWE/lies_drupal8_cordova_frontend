@@ -90,3 +90,27 @@ html, body {
     width: 80%;
     height: auto;
 }
+
+#app-toolbar {
+    position: fixed;
+    z-index: 20000;
+    left: 0;
+    bottom: 0;
+    height: auto;
+    width: 100%;
+    /*background-color: grey;*/
+
+}
+
+#app-toolbar .ui-btn {
+    background-color: lightgrey;
+    border-radius: 0.3em;
+    float: left;
+    margin-left: 0.5em;
+    height: 40px;
+    width: 40px;
+}
+
+#btn-back {
+    display: none;
+}

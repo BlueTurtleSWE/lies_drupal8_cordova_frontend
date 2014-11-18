@@ -13,6 +13,9 @@ var g_curr_user = null;
 var g_stalk_user = null;
 
 
+
+// TODO: old - migrate to OOP implementation, any globals needed move to above
+
 const proof_label = "http:\/\/lies.hazardous.se\/rest\/relation\/node\/a_lie\/field_the_proof";
 const liar_label = "http:\/\/lies.hazardous.se\/rest\/relation\/node\/a_lie\/uid";
 
@@ -22,7 +25,7 @@ const list_uri = web_site + '/latest-lies';
 const submit_lie_uri = web_site + '/entity/node/';
 const hack_upload_uri = web_site + '/hack-upload-form';
 
-// Initializing globals // TODO: old - migrate to above
+// Initializing globals
 var current_state = init_state;
 var img_build_id = null;
 var img_token = null;
@@ -112,6 +115,24 @@ function focus_login(next_state, data) {
     $('#next-state').val(next_state);
     $('#next-state-data').val(encodeURI(data));
     $.mobile.changePage('#identity-lies', 'slide', true, true);
+
+    if (g_curr_user) {
+        $('#register-alias').val(g_curr_user.getName());
+        var mail = g_curr_user.getMail()?g_curr_user.getMail():$('#register-email').attr('def_label');
+        $('#register-email').val(mail);
+        $('#register-password').val($('#register-password').attr('def_label'));
+
+        $('#btn-login').hide();
+        $('#btn-create-user').hide();
+        $('#btn-edit-user').show();
+        $('#btn-logout').show();
+    } else {
+        $('#btn-login').show();
+        $('#btn-create-user').show();
+        $('#btn-edit-user').hide();
+        $('#btn-logout').hide();
+    }
+
     $('#spinner').hide();
 }
 
@@ -162,10 +183,13 @@ function state_show_hide() {
     $('#spinner').show();
     switch (current_state) {
         case browse_state:
-            $('#list-toolbar').show();
+            $('#btn-refresh').show();
+            $('#btn-back').hide();
             break;
         default:
-            $('#list-toolbar').hide();
+            $('#btn-refresh').hide();
+            $('#btn-back').show();
+            break;
     }
 }
 
@@ -266,6 +290,10 @@ function create_liar() {
     g_curr_user = new User(u_data);
 }
 
+function edit_liar() {
+    alert('Editing user data not yet supported');
+}
+
 function login_liar() {
     var u_data = validate_liar_cred(false);
     if (!u_data) return;
@@ -301,6 +329,13 @@ function login_liar_cb (msg){
     }
 }
 
+function logout_liar () {
+    g_curr_user = null;
+    if (window.localStorage) {
+        window.localStorage.removeItem('user');
+    }
+    cancel();
+}
 
 // Tattletale!!!
 function submit_your_lie() {

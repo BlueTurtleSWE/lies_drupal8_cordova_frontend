@@ -11,22 +11,27 @@
 <body>
 <img id="spinner" src="img/spinner.gif"/>
 
+<div id="app-toolbar">
+    <a href="#" id="btn-add" class="ui-btn ui-icon-plus ui-btn-icon-notext ui-btn-corner-all custom-btn"
+       onClick="focus_submit();"></a>
+    <a href="#" id="btn-user" class="ui-btn ui-icon-user ui-btn-icon-notext ui-btn-corner-all custom-btn"
+       onClick="focus_login(current_state);"></a>
+    <a href="#" id="btn-back" class="ui-btn ui-icon-back ui-btn-icon-notext ui-btn-corner-all custom-btn"
+       onClick="cancel();"></a>
+    <a href="#" id="btn-refresh" class="ui-btn ui-icon-refresh ui-btn-icon-notext ui-btn-corner-all custom-btn"
+       onClick="focus_browse();"></a>
+</div>
+
 <div id="latest-lies" data-role="page" data-theme="a">
     <img class="lies-logo" src="img/lies.png"/>
 
     <div id="list-of-lies"></div>
-    <div id="list-toolbar" class="toolbar">
-        <a href="#" class="fixed-button" data-role="button" onClick="focus_submit();">Tell a lie</a>
-    </div>
 </div>
 
 <div id="check-a-liar" class="enclosure" data-role="page" data-theme="a">
     <img class="lies-logo" src="img/lies.png"/>
 
     <div id="list-of-liars-lies" class="enclosure"></div>
-    <div class="toolbar">
-        <a href="#" data-role="button" onClick="cancel();">Back to the latest</a>
-    </div>
 </div>
 
 <div id="identity-lies" data-role="page" data-theme="a">
@@ -42,9 +47,10 @@
                onBlur="blur_input(this);" data-theme="a"/>
         <input id="register-password" type="password" def_label="Your Password" value="Your Password"
                onFocus="focus_input(this);" onBlur="blur_input(this);" data-theme="a"/>
-        <a href="#" data-role="button" data-theme="a" id="login-liar" onClick="login_liar();">Login Liar</a>
-        <a href="#" data-role="button" data-theme="a" id="create-liar" onClick="create_liar();">New Liar</a>
-        <a href="#" data-role="button" data-theme="a" id="no-liar" onClick="cancel();">Chicken</a>
+        <a href="#" id="btn-login" data-role="button" data-theme="a" onClick="login_liar();">Login Liar</a>
+        <a href="#" id="btn-create-user" data-role="button" data-theme="a" onClick="create_liar();">New Liar</a>
+        <a href="#" id="btn-edit-user" data-role="button" data-theme="a" onClick="edit_liar();">Edit Liar</a>
+        <a href="#" id="btn-logout" data-role="button" data-theme="a" onClick="logout_liar();">Logout Liar</a>
     </div>
 </div>
 
@@ -58,7 +64,6 @@
         <input id="brand-new-lies" type="text" def_label="Tell me lies, tell me sweet little lies..."
                onFocus="focus_input(this);" onBlur="blur_input(this);"
                value="Tell me lies, tell me sweet little lies..." data-theme="a"/>
-        <a href="#" data-role="button" data-theme="a" id="bail-out" onClick="cancel();">Bail out...</a>
         <a href="#" data-role="button" data-theme="a" id="tell-the-world" onClick="submit_your_lie();">Tell the
             world!</a>
     </div>
@@ -76,5 +81,4 @@
 
 </body>
 </html>
-
 

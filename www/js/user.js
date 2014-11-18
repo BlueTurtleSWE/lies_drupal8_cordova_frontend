@@ -5,9 +5,9 @@
 
 const user_hal_tpl = {
     "_links": {"type": {"href": "http:\/\/lies.hazardous.se\/rest\/type\/user\/user"}},
-    "name": [{"value": '%USER%'}],
-    "mail": [{"value": '%EMAIL%'}],
-    "pass": [{"value": '%PASSWORD%'}],
+    "name": [{"value": null}],
+    "mail": [{"value": null}],
+    "pass": [{"value": null}],
     "status": [{"value": 1}]
 };
 
