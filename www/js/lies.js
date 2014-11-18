@@ -19,25 +19,17 @@ const liar_label = "http:\/\/lies.hazardous.se\/rest\/relation\/node\/a_lie\/uid
 
 const web_site = 'http://lies.hazardous.se';
 const list_uri = web_site + '/latest-lies';
-const create_user_uri = web_site + '/entity/user/';
 const submit_lie_uri = web_site + '/entity/node/';
 const hack_upload_uri = web_site + '/hack-upload-form';
 
 // Initializing globals // TODO: old - migrate to above
 var current_state = init_state;
-var user_data = null;
 var img_build_id = null;
 var img_token = null;
 var img_uuid = null;
 var img_dest_uri = null;
 
-function user_data_tpl() {
-    this.alias = null;
-    this.email = null;
-    this.passwd = null;
-    this.auth_header = null;
-    return this;
-}
+
 
 
 // The onload stuff
@@ -48,9 +40,9 @@ document.addEventListener('deviceready', function () {
     if (!window.atob) window.atob = $.base64.atob;
 
     if (window.localStorage) {
-        var user_data_loaded = JSON.parse(window.localStorage.getItem("user"));
-        if (user_data_loaded != null) {
-            g_curr_user = new User(user_data_loaded);
+        var user_hal_loaded = JSON.parse(window.localStorage.getItem("user"));
+        if (user_hal_loaded != null) {
+            g_curr_user = new User(user_hal_loaded);
         }
     }
 
