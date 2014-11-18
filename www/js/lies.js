@@ -11,24 +11,21 @@ const g_debug = true;
 // Initializing globals
 var g_curr_user = null;
 var g_stalk_user = null;
+var g_node_submit = null;
 
 
 
 // TODO: old - migrate to OOP implementation, any globals needed move to above
 
-const proof_label = "http:\/\/lies.hazardous.se\/rest\/relation\/node\/a_lie\/field_the_proof";
-const liar_label = "http:\/\/lies.hazardous.se\/rest\/relation\/node\/a_lie\/uid";
 
 
 const web_site = 'http://lies.hazardous.se';
 const list_uri = web_site + '/latest-lies';
-const submit_lie_uri = web_site + '/entity/node/';
 const hack_upload_uri = web_site + '/hack-upload-form';
 
 // Initializing globals
 var current_state = init_state;
 var img_build_id = null;
-var img_token = null;
 var img_uuid = null;
 var img_dest_uri = null;
 
@@ -81,7 +78,7 @@ function focus_browse() {
         },
         type: 'GET',
         url: list_uri
-    }).success(browse_display).fail(error_display);
+    }).done(browse_display).fail(error_display);
 }
 
 function focus_stalk(stalkee) {
@@ -144,7 +141,6 @@ function focus_submit() {
         return;
     }
     img_build_id = null;
-    img_token = null;
     img_uuid = null;
     img_dest_uri = null;
     $('#your-proof').show();
@@ -154,7 +150,7 @@ function focus_submit() {
     $.mobile.changePage('#tell-a-lie', 'slide', true, true);
     $('#spinner').hide();
 
-    // Fetch the form at  and rip out the form_build_id and form_token
+    // Fetch the form at and rip out the form_build_id and form_token
     $.ajax({
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", g_curr_user.getAuth());
@@ -199,16 +195,8 @@ function browse_display(response) {
     var list_elm = $('#list-of-lies');
     list_elm.empty();
     for (var i = 0; i < response.length; ++i) {
-        var lie_title = response[i].title[0].value;
-        var lie_created = response[i].created[0].value;
-        var lie_proof = response[i]._embedded[proof_label] ? response[i]._embedded[proof_label][0]._links.self.href : false;
-        var lie_liar = response[i]._embedded[liar_label][0]._links.self.href;
-        var new_lie_div_text = '<div id="' + lie_created + '" class="item-lie">'
-            + '<div class="item-title">' + lie_title + '</div>'
-            + (lie_proof ? ('<img class="item-proof" src="' + lie_proof + '"/>') : '')
-            + '<a href="#" onClick="focus_stalk(\'' + lie_liar + '\');"><div class="item-liar">Who lied?</div></a>'
-            + '</div>';
-        list_elm.append(new_lie_div_text);
+        var node = new Node(response[i]);
+        list_elm.append(node.render());
     }
     $('#spinner').hide();
 }
@@ -226,14 +214,12 @@ function stalk_display(response) {
     var list_elm = $('#list-of-liars-lies');
     list_elm.empty();
 
-    var liar = 'Error, no I mean the guy in that village in Zelda 2';
-    if (g_stalk_user && g_stalk_user.isReady()) {
-        liar = g_stalk_user.getName();
+    if (!(g_stalk_user && g_stalk_user.isReady())) {
+        throw ( new Error ( "Failed to load user" ) );
     }
 
-    list_elm.append(
-        '<div class="item-lie"><div class="item-title">The Liar is: ' + liar + "</div></div>"
-    );
+    list_elm.append( g_stalk_user.render() );
+
     $('#spinner').hide();
 }
 
@@ -343,59 +329,28 @@ function submit_your_lie() {
         return false;
     }
     $('#spinner').show();
-    var headers_obj = submit_a_lie_headers;
-    var data_obj = null;
 
+    var node_input = {title: $('#brand-new-lies').val(), cb: submit_cb };
     if (img_uuid) {
         var img_dest_href = img_dest_uri.replace('public://', the_proof_base_uri);
-        data_obj = submit_a_lie_w_img_tpl;
-        data_obj._links[the_proof_relation][0].href = img_dest_href;
-
-        data_obj._embedded[the_proof_relation][0]._links.self = img_dest_href;
-        data_obj._embedded[the_proof_relation][0].uuid[0].value = img_uuid;
-        data_obj._embedded[the_proof_relation][0].uri[0].value = img_dest_href;
-    } else {
-        data_obj = submit_a_lie_tpl;
-        alert('Have no image, will post');
+        node_input.img_uri = img_dest_href;
+        node_input.img_uuid = img_uuid;
     }
-    data_obj.title[0].value = $('#brand-new-lies').val();
+    g_node_submit = new Node(node_input);
 
-    var data_json = JSON.stringify(data_obj);
-    console.log('Submitting:' + data_json);
-
-    $.ajax({
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader("Authorization", g_curr_user.getAuth());
-        },
-        headers: headers_obj,
-        type: 'POST',
-        data: data_json,
-        url: submit_lie_uri
-    }).done(submit_success).fail(submit_fail).always(function (data) {
-        console.log('Submit over');
-        focus_browse();
-    });
 }
 
-function submit_success(data) {
-    console.log('Submit success');
-    alert('Your submission to the master has been acknowledged - please proceed');
-    focus_browse();
-}
-
-function submit_fail(obj, err, thrown) {
-    if (err == 'parsererror') {
-        return submit_success(obj);
-    } else {
-        alert('Sorry, no cake for you...');
+function submit_cb(msg) {
+    if (!g_node_submit.isReady()) {
+        alert("Failed to submit lie: "+msg);
+        return cancel();
     }
-    console.log('Submit fail:' + err + "\nIt threw this:" + dump(thrown, 5));
-    $('#spinner').hide();
+    return focus_browse();
 }
 
 function extract_form_id(data) {
     var form_matches = data.match(/\<form[\s\S]*\<\/form\>/gm);
-    console.log("Form:" + form_matches[0]);
+    //console.log("Form:" + form_matches[0]);
     var matches = /name="form_build_id"\s+value="(form-.+?)"/gm.exec(data);
     if (matches && matches.length) {
         img_build_id = matches[1];
@@ -403,14 +358,6 @@ function extract_form_id(data) {
     }
     else {
         console.log('Bad regex!!!');
-    }
-    matches = /name="form_token"\s+value="(.*?)"/gm.exec(data);
-    if (matches && matches.length) {
-        img_token = matches[1];
-        console.log('Form token:' + img_token);
-    }
-    else {
-        console.log('Found no token. Did form login not work?');
     }
 }
 
@@ -444,9 +391,6 @@ function FormParms() {
         throw(new Error("No sensible img_build_id"));
     }
     this.form_build_id = img_build_id;
-    if (img_token) {
-        this.form_token = img_token;
-    }
     this.form_id = 'hack_upload_form';
     this.op = 'Upload';
     return this;

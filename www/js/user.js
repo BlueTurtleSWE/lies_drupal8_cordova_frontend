@@ -83,7 +83,7 @@ function User(i_user) {
             console.log(err);
             console.log(dump(exception));
         }
-        if (err == 'pareserror') {
+        if (err.match(/parsererror/)) {
             return _success("Continue anyway");
         }
         _always_cb(err);
@@ -99,6 +99,11 @@ function User(i_user) {
 
     this.getJSON = function () {
         return JSON.stringify(_user_hal);
+    }
+
+    this.render = function () {
+        var ret_val = '<div class="item-lie"><div class="item-title">The Liar is: ' + _get_name() + "</div></div>";
+        return ret_val;
     }
 
     this.isReady = function () {
