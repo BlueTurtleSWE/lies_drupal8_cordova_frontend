@@ -268,7 +268,7 @@ function create_liar() {
     $('#spinner').show();
 
     u_data.cb = login_liar_cb;
-    u_data.create = true;
+    u_data.edit = true;
     g_curr_user = new user_class(u_data);
 }
 
@@ -277,7 +277,7 @@ function login_liar() {
     if (!u_data) return;
 
     u_data.cb = login_liar_cb;
-    u_data.create = false;
+    u_data.edit = false;
     g_curr_user = new user_class(u_data);
 }
 

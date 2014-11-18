@@ -34,29 +34,29 @@ function user_class(i_user) {
     var _always_cb = i_user.cb ? i_user.cb : function () {
     };
 
-    function _admin_before_func(xhr) {
+    var _admin_before_func = function (xhr) {
         xhr.setRequestHeader("Authorization", g_admin_login_base64);
     }
 
-    function _get_name () {
+    var _get_name = function () {
         var ret_val = _user_hal.name[0].value;
         if (g_debug) console.log("Name: "+ret_val);
         return ret_val;
     }
 
-    function _get_pass () {
+    var _get_pass = function () {
         var ret_val = _user_hal.pass[0].value;
         if (g_debug) console.log("Pass: "+ret_val);
         return ret_val;
     }
 
-    function _user_auth(xhr) {
+    var _user_auth = function (xhr) {
         var ret_val = 'Basic ' + btoa(_get_name() + ':' + _get_pass());
         if (g_debug) console.log('Auth: '+ret_val);
         return ret_val;
     }
 
-    function _success_get (response) {
+    var _success_get = function (response) {
         if (g_debug) {
             console.log(dump(response));
         }
@@ -70,7 +70,7 @@ function user_class(i_user) {
         _always_cb();
     }
 
-    function _success (msg) {
+    var _success = function (msg) {
         if (g_debug) {
             console.log(dump(msg));
         }
@@ -78,7 +78,7 @@ function user_class(i_user) {
         _always_cb();
     }
 
-    function _fail (xhr, err, exception) {
+    var _fail = function (xhr, err, exception) {
         if (g_debug) {
             console.log(err);
             console.log(dump(exception));
@@ -120,16 +120,16 @@ function user_class(i_user) {
 
         // Make an ajax call to save the object
         $.ajax({
-            beforeSend: _before_func,
+            beforeSend: _admin_before_func,
             accepts: 'application/hal+json',
             contentType: 'application/hal+json',
-            type: i_user.method ? i_user.method : POST,
+            type: i_user.method ? i_user.method : 'POST',
             data: JSON.stringify(_user_hal),
             url: _user_uri
         }).done(_success).fail(_fail);
     } else if (i_user.uid) {
         // Make an ajax call to load the object from the server
-        var auth = g_curr_user?g_curr_user.getAuth():this.getAuth();
+        var auth = g_curr_user?g_curr_user.getAuth():getAuth();
         var load_uri = c_web_site + '/user/' + i_user.uid;
         console.log(dump(i_user));
         console.log("Load:"+load_uri);
