@@ -324,7 +324,6 @@ function login_liar_cb (msg){
         case stalk_state:
             return focus_stalk(data);
         default:
-            alert('Unknown state ' + next_state + ' after logging in!');
             return cancel();
     }
 }
