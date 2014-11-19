@@ -177,7 +177,6 @@ function cancel() {
 
 function state_show_hide() {
     $('#spinner').show();
-    g_node_submit = null; // Should never survive a state change
     switch (current_state) {
         case browse_state:
             $('#btn-refresh').show();
