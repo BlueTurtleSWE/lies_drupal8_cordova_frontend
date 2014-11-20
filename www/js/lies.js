@@ -6,6 +6,7 @@ const login_state = 3;
 const submit_state = 4;
 
 const c_web_site = 'http://lies.hazardous.se';
+const c_the_proof_base_uri = "http://lies.hazardous.se/sites/default/files/";
 const g_debug = true;
 
 // Initializing globals
@@ -332,7 +333,7 @@ function submit_your_lie() {
 
     var node_input = {title: $('#brand-new-lies').val(), cb: submit_cb };
     if (img_uuid) {
-        var img_dest_href = img_dest_uri.replace('public://', the_proof_base_uri);
+        var img_dest_href = img_dest_uri.replace('public://', c_the_proof_base_uri);
         node_input.img_uri = img_dest_href;
         node_input.img_uuid = img_uuid;
     }
