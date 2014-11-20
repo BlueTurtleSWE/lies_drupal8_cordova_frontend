@@ -5,8 +5,9 @@ const stalk_state = 2;
 const login_state = 3;
 const submit_state = 4;
 
-const c_web_site = 'http://lies.hazardous.se';
-const c_the_proof_base_uri = "http://lies.hazardous.se/sites/default/files/";
+const c_host = 'lies.hazardous.se';
+const c_web_site = 'http://'+c_host;
+const c_the_proof_base_uri = c_web_site + "/sites/default/files/";
 const g_debug = true;
 
 // Initializing globals
@@ -18,11 +19,8 @@ var g_node_submit = null;
 
 // TODO: old - migrate to OOP implementation, any globals needed move to above
 
-
-
-const web_site = 'http://lies.hazardous.se';
-const list_uri = web_site + '/latest-lies';
-const hack_upload_uri = web_site + '/hack-upload-form';
+const list_uri = c_web_site + '/latest-lies';
+const hack_upload_uri = c_web_site + '/hack-upload-form';
 
 // Initializing globals
 var current_state = init_state;
@@ -156,7 +154,7 @@ function focus_submit() {
         beforeSend: function (xhr) {
             xhr.setRequestHeader("Authorization", g_curr_user.getAuth());
         },
-        url: 'http://lies.hazardous.se/hack-upload-form',
+        url: hack_upload_uri,
         type: 'GET'
     }).done(extract_form_id).fail(no_form_id);
 
@@ -415,7 +413,7 @@ function snap_a_pic_success(img_uri) {
     options.mimeType = "image/jpeg";
     options.headers = {
         Authorization: g_curr_user.getAuth(),
-        Host: 'lies.hazardous.se',
+        Host: c_host,
         Connection: "keep-alive",
         Referer: hack_upload_uri
     };
