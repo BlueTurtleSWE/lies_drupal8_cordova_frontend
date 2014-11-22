@@ -1,35 +1,17 @@
 // Constants
-const init_state = 0;
-const browse_state = 1;
-const stalk_state = 2;
-const login_state = 3;
-const submit_state = 4;
+const c_init_state = 0;
+const c_browse_state = 1;
+const c_stalk_state = 2;
+const c_login_state = 3;
+const c_image_state = 4;
+const c_submit_state = 5;
 
 const c_host = 'lies.hazardous.se';
-const c_web_site = 'http://'+c_host;
-const c_the_proof_base_uri = c_web_site + "/sites/default/files/";
+const c_web_site = 'http://' + c_host;
 const g_debug = true;
 
 // Initializing globals
-var g_curr_user = null;
-var g_stalk_user = null;
-var g_node_submit = null;
-
-
-
-// TODO: old - migrate to OOP implementation, any globals needed move to above
-
-const list_uri = c_web_site + '/latest-lies';
-const hack_upload_uri = c_web_site + '/hack-upload-form';
-
-// Initializing globals
-var current_state = init_state;
-var img_build_id = null;
-var img_uuid = null;
-var img_dest_uri = null;
-
-
-
+var g_fsm = null;
 
 // The onload stuff
 document.addEventListener('deviceready', function () {
@@ -38,18 +20,11 @@ document.addEventListener('deviceready', function () {
     if (!window.btoa) window.btoa = $.base64.btoa;
     if (!window.atob) window.atob = $.base64.atob;
 
-    document.addEventListener('backbutton', cancel, false); // Fix the back button on Android
+    document.addEventListener('backbutton', g_fsm.cancel, false); // Fix the back button on Android
 
-    if (window.localStorage) {
-        var user_hal_loaded = JSON.parse(window.localStorage.getItem("user"));
-        if (user_hal_loaded != null) {
-            g_curr_user = new User(user_hal_loaded);
-        }
-    }
-
-    init_lies();
+    // Start the Finite State Machine
+    g_fsm = new FSM();
 }, false);
-
 
 // Customize alert box
 if (navigator.notification) {
@@ -59,402 +34,150 @@ if (navigator.notification) {
 }
 
 
-// State functions
-
-function init_lies() {
-    console.log('init_lies');
-    focus_browse();
-}
-
-function focus_browse() {
-    current_state = browse_state;
-    state_show_hide();
-    $.mobile.changePage('#latest-lies', 'slide', true, true);
-
-    $.ajax({
-        headers: {
-            Accept: "application/hal+json"
-        },
-        type: 'GET',
-        url: list_uri
-    }).done(browse_display).fail(error_display);
-}
-
-function focus_stalk(stalkee) {
-    current_state = stalk_state;
-    state_show_hide();
-    if (!g_curr_user) {
-        focus_login(stalk_state, stalkee);
-        return;
-    }
-    $.mobile.changePage('#check-a-liar', 'slide', true, true);
-    var stalk_uid = null;
-
-    if (typeof(stalkee) == 'number') {
-        stalk_uid = stalkee;
-        console.log("Check out user "+stalk_uid);
-    } else {
-        var uid_matches = stalkee.match(/\d+$/);
-        stalk_uid = uid_matches[0];
-        console.log("Exstracted uid "+stalk_uid+" - let's check it out");
-    }
-
-    g_stalk_user = new User({uid : stalk_uid, cb : stalk_display });
-}
-
-function focus_login(next_state, data) {
-    current_state = login_state;
-    state_show_hide();
-    if (!data) {
-        data = '';
-    }
-    $('#next-state').val(next_state);
-    $('#next-state-data').val(encodeURI(data));
-    $.mobile.changePage('#identity-lies', 'slide', true, true);
-
-    if (g_curr_user) {
-        $('#register-alias').val(g_curr_user.getName());
-        var mail = g_curr_user.getMail()?g_curr_user.getMail():$('#register-email').attr('def_label');
-        $('#register-email').val(mail);
-        $('#register-password').val($('#register-password').attr('def_label'));
-
-        $('#btn-login').hide();
-        $('#btn-create-user').hide();
-        $('#btn-edit-user').show();
-        $('#btn-logout').show();
-    } else {
-        $('#btn-login').show();
-        $('#btn-create-user').show();
-        $('#btn-edit-user').hide();
-        $('#btn-logout').hide();
-    }
-
-    $('#spinner').hide();
-}
-
-function focus_submit() {
-    current_state = submit_state;
-    state_show_hide();
-    if (!g_curr_user) {
-        focus_login(submit_state);
-        return;
-    }
-    img_build_id = null;
-    img_uuid = null;
-    img_dest_uri = null;
-    $('#your-proof').show();
-    $('#your-proof').attr('src', $('#your-proof').attr('def_src'));
-    $('#get-your-proof').show();
-    $('#brand-new-lies').val($('#brand-new-lies').attr('def_label'));
-    $.mobile.changePage('#tell-a-lie', 'slide', true, true);
-    $('#spinner').hide();
-
-    // Fetch the form at and rip out the form_build_id and form_token
-    $.ajax({
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader("Authorization", g_curr_user.getAuth());
-        },
-        url: hack_upload_uri,
-        type: 'GET'
-    }).done(extract_form_id).fail(no_form_id);
-
-}
-
-function cancel() {
-    // Use this function to clean up the pages
-    switch (current_state) {
-        case stalk_state:
-            $('#list-of-liars-lies').empty(); // In case we come from the stalk page
-            break;
-        case login_state:
-            break;
-        case submit_state:
-            break;
-    }
-    focus_browse();
-}
-
-function state_show_hide() {
-    $('#spinner').show();
-    switch (current_state) {
-        case browse_state:
-            $('#btn-refresh').show();
-            $('#btn-back').hide();
-            break;
-        default:
-            $('#btn-refresh').hide();
-            $('#btn-back').show();
-            break;
-    }
-}
-
-// Data handlers
-
-function browse_display(response) {
-    var list_elm = $('#list-of-lies');
-    list_elm.empty();
-    for (var i = 0; i < response.length; ++i) {
-        var node = new Node(response[i]);
-        list_elm.append(node.render());
-    }
-    $('#spinner').hide();
-}
-
-function error_display(msg) {
-    $('#list-of-lies').append('<div id="000" class="item-lie">'
-    + '<div class="item-title">Somthing broke</div>'
-    + '<div class="item-liar">Blame Master Liar</div>'
-    + '</div>');
-    console.log(msg);
-    $('#spinner').hide();
-}
-
-function stalk_display(response) {
-    var list_elm = $('#list-of-liars-lies');
-    list_elm.empty();
-
-    if (!(g_stalk_user && g_stalk_user.isReady())) {
-        throw ( new Error ( "Failed to load user" ) );
-    }
-
-    list_elm.append( g_stalk_user.render() );
-
-    $('#spinner').hide();
-}
+// This is the Finite State Machine
+function FSM() {
+    var self = this;
+    var current_user = null;
+    var event_sel = "click tap";
+    var current_state_id = c_init_state;
+    var browse = new BrowseState({parent: this, next_state: c_browse_state});
+    var current_state = null;
+    var spinner = $('#spinner');
+    var btn_refresh = $('#btn-refresh');
+    var btn_back = $('#btn-back');
+    var btn_user = $('#btn-user');
+    var btn_add = $('#btn-add');
 
 
-// Form handlers
-
-function focus_input(elm) {
-    if ($(elm).attr('def_label') == $(elm).val()) {
-        $(elm).val('');
-    }
-}
-
-function blur_input(elm) {
-    if ($(elm).val() == '') {
-        $(elm).val($(elm).attr('def_label'));
-    }
-}
-
-
-// Login helpers
-function validate_liar_cred(check_email) {
-    var u_ret = { };
-    if ($('#register-alias').val() == $('#register-alias').attr('def_label')) {
-        alert("Please pick an alias");
-        return null;
-    } else {
-        u_ret.name = $('#register-alias').val();
-    }
-    if ($('#register-password').val() == $('#register-password').attr('def_label')) {
-        alert("Please enter your password");
-        return null;
-    } else {
-        u_ret.pass = $('#register-password').val();
-    }
-    if (check_email === true) {
-        if ($('#register-email').val() == $('#register-email').attr('def_label')) {
-            alert("Please enter your email");
-            return null;
-        } else {
-            u_ret.mail = $('#register-email').val();
+    // Private functions
+    function _restricted_check(i_state) {
+        if (current_user) {
+            return true;
+        }
+        switch (i_state) {
+            case c_stalk_state:
+            case c_image_state:
+            case c_submit_state:
+                return false;
+            default:
+                return true;
         }
     }
 
-    return u_ret;
-}
-
-function create_liar() {
-    var u_data = validate_liar_cred(true);
-    if (!u_data) return;
-    $('#spinner').show();
-
-    u_data.cb = login_liar_cb;
-    u_data.edit = true;
-    g_curr_user = new User(u_data);
-}
-
-function edit_liar() {
-    alert('Editing user data not yet supported');
-}
-
-function login_liar() {
-    var u_data = validate_liar_cred(false);
-    if (!u_data) return;
-
-    u_data.cb = login_liar_cb;
-    u_data.edit = false;
-    g_curr_user = new User(u_data);
-}
-
-function login_liar_cb (msg){
-    $('#spinner').hide();
-    if (!g_curr_user.isReady()) {
-        alert(msg);
-        return;
-    }
-
-    // Save user data
-    if (window.localStorage) {
-        window.localStorage.setItem('user', g_curr_user.getJSON());
-    }
-
-    // Now find out where to go!
-    var next_state = parseInt($('#next-state').val());
-    var data = decodeURI($('#next-state-data').val());
-    switch (next_state) {
-        case submit_state:
-            return focus_submit();
-        case stalk_state:
-            return focus_stalk(data);
-        default:
-            return cancel();
-    }
-}
-
-function logout_liar () {
-    g_curr_user = null;
-    if (window.localStorage) {
-        window.localStorage.removeItem('user');
-    }
-    cancel();
-}
-
-// Tattletale!!!
-function submit_your_lie() {
-    if ($('#brand-new-lies').val() == $('#brand-new-lies').attr('def_label')) {
-        alert("Pleeeeease tell us!");
-        return false;
-    }
-    $('#spinner').show();
-
-    var node_input = {title: $('#brand-new-lies').val(), cb: submit_cb };
-    if (img_uuid) {
-        var img_dest_href = img_dest_uri.replace('public://', c_the_proof_base_uri);
-        node_input.img_uri = img_dest_href;
-        node_input.img_uuid = img_uuid;
-    }
-    g_node_submit = new Node(node_input);
-
-}
-
-function submit_cb(msg) {
-    if (!g_node_submit.isReady()) {
-        alert("Failed to submit lie: "+msg);
-        return cancel();
-    }
-    return focus_browse();
-}
-
-function extract_form_id(data) {
-    var form_matches = data.match(/\<form[\s\S]*\<\/form\>/gm);
-    //console.log("Form:" + form_matches[0]);
-    var matches = /name="form_build_id"\s+value="(form-.+?)"/gm.exec(data);
-    if (matches && matches.length) {
-        img_build_id = matches[1];
-        console.log('Form build id:' + img_build_id);
-    }
-    else {
-        console.log('Bad regex!!!');
-    }
-}
-
-function no_form_id(obj, err, thrown) {
-    alert('Image upload is currently offline. Take a nice pic if you like to, but don\'t expect me to do anything with it!');
-}
-
-function snap_a_pic() {
-    if (navigator.camera && navigator.camera.getPicture) {
-        navigator.camera.getPicture(snap_a_pic_success, snap_a_pic_fail,
-            {
-                quality: 45,
-                destinationType: Camera.DestinationType.FILE_URI,
-                sourceType: Camera.PictureSourceType.CAMERA,
-                mediaType: Camera.MediaType.PICTURE,
-                encodingType: Camera.EncodingType.JPEG,
-                targetWidth: 500,
-                targetHeight: 500,
-                mediaType: Camera.MediaType.PICTURE,
-                cameraDirection: Camera.Direction.BACK,
-                correctOrientation: true,
-                saveToPhotoAlbum: false
+    // params:
+    // state,
+    // data (for stalk and login states),
+    // resume (for coming back to resume from image)
+    this.switchState = function (i_switch) {
+        spinner.show();
+        if (!_restricted_check(i_switch.state)) {
+            return self.switchState({
+                state: c_login_state,
+                data: i_switch
             });
-    } else {
-        alert("You lied!\nThere's no camera here...");
-    }
-}
+        }
 
-function FormParms() {
-    if (!img_build_id) {
-        throw(new Error("No sensible img_build_id"));
-    }
-    this.form_build_id = img_build_id;
-    this.form_id = 'hack_upload_form';
-    this.op = 'Upload';
-    return this;
-}
+        current_state_id = i_switch.state;
+        if (current_state_id == c_browse_state) {
+            btn_refresh.show();
+            btn_back.hide();
+        } else {
+            btn_refresh.hide();
+            btn_back.show();
+        }
 
-function snap_a_pic_success(img_uri) {
-    $('#spinner').hide();
-    $('#get-your-proof').hide();
-    $('#your-proof').attr('src', img_uri);
-    $('#your-proof').show();
-
-    var img_file_name_matches = img_uri.match(/.*\/(\w+\.jpg)/);
-    var img_file_name = img_file_name_matches[1];
-    console.log("File name part of " + img_uri + " is img_file_name");
-
-    // Start uploading pic in the background
-    var form_params = new FormParms();
-    var options = new FileUploadOptions();
-    options.fileKey = "files[new_file]";
-    options.fileName = img_file_name;
-    options.mimeType = "image/jpeg";
-    options.headers = {
-        Authorization: g_curr_user.getAuth(),
-        Host: c_host,
-        Connection: "keep-alive",
-        Referer: hack_upload_uri
+        // TODO: Which is more efficient, creating new a new state object each time we're changing focus?
+        // TODO: Or reusing one object of each? A bit worried about memory use vs stale values
+        switch (current_state_id) {
+            case c_browse_state:
+                $.mobile.changePage('#latest-lies', 'slide', true, true);
+                current_state = browse;
+                break;
+            case c_stalk_state:
+                $.mobile.changePage('#check-a-liar', 'slide', true, true);
+                current_state = new StalkState({parent: self, stalk_uid: i_switch.data});
+                break;
+            case c_login_state:
+                $.mobile.changePage('#identity-lies', 'slide', true, true);
+                current_state = new LoginState({parent: self, data: i_switch.data});
+                break;
+            case c_image_state:
+                current_state = new ImageState({parent: self, sibling: current_state});
+                break;
+            case c_submit_state:
+                $.mobile.changePage('#tell-a-lie', 'slide', true, true);
+                current_state = i_switch.resume ? i_switch.resume : new LieState({parent: self});
+                break;
+            default:
+                throw ( new Error("Unknown state:" + current_state_id) );
+        }
+        current_state.update();
     };
 
-    options.params = form_params;
+    this.setUser = function (user) {
+        if (user) {
+            current_user = user;
+            if (window.localStorage) {
+                window.localStorage.setItem('user', current_user.getJSON());
+            }
+        } else {
+            current_user = null;
+            if (window.localStorage) {
+                window.localStorage.removeItem('user');
+            }
+        }
+    };
 
-    console.log('' + dump(options));
+    this.user = function () {
+        return current_user;
+    };
 
-    var ft = new FileTransfer();
-    ft.upload(
-        img_uri,
-        hack_upload_uri,
-        img_post_success,
-        img_post_fail,
-        options,
-        true // debug!
-    );
-}
+    this.cancel = function () {
+        current_state.cancel();
+    };
 
-function snap_a_pic_fail(err) {
-    console.log('Snap fail:' + err);
-    $('#spinner').hide();
-}
+    // Init FSM
+    // Bind focus and blur to all input fields
+    $('input').each(function () {
+        this.on('focus', _focus_input);
+        this.on('blur', _blur_input);
+    });
 
-function img_post_success(data) {
-    var resp_obj = JSON.parse(data.response);
-    console.log('Image upload response: ' + data.response);
-    if (!resp_obj) {
-        alert('Error: Image upload failed');
-    } else if (resp_obj.uuid != 0) {
-        img_uuid = resp_obj.uuid;
-        img_dest_uri = resp_obj.uri;
-        //alert('Image uploaded');
-    } else {
-        alert('Error: Image upload aborted');
-        img_uuid = 0;
-        img_dest_uri = null;
+    function _focus_input(elm) {
+        if ($(elm).attr('def_label') == $(elm).val()) {
+            $(elm).val('');
+        }
     }
+
+    function _blur_input(elm) {
+        if ($(elm).val() == '') {
+            $(elm).val($(elm).attr('def_label'));
+        }
+    }
+
+    // Bind the toolbar buttons here - instead of in index.html
+    btn_add.on(event_sel, function () {
+        self.switchState({next: c_submit_state});
+    });
+    btn_user.on(event_sel, function () {
+        self.switchState({next: c_login_state});
+    });
+    btn_back.on(event_sel, function () {
+        current_state.cancel();
+    });
+    btn_refresh.on(event_sel, function () {
+        current_state.update();
+    });
+
+    if (window.localStorage) {
+        var user_hal_loaded = JSON.parse(window.localStorage.getItem("user"));
+        if (user_hal_loaded != null) {
+            current_user = new User(user_hal_loaded);
+        }
+    }
+
+    // Let's get the show on the road
+    self.switchState({state: c_browse_state});
 }
 
-function img_post_fail(err) {
-    alert('Error: Image upload failed badly');
-    console.log(dump(err, 4));
-}
+

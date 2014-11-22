@@ -5,10 +5,10 @@
 
 function hal_type(hal_obj) {
     if (!hal_obj._links) {
-        throw (new Error ("Object is not a hal object: "+dump(hal_obj)));
+        throw (new Error("Object is not a hal object: " + dump(hal_obj)));
     }
     if (!hal_obj._links.type) {
-        throw (new Error ("HAL object invalid. Has no type declaration: "+dump(hal_obj)));
+        throw (new Error("HAL object invalid. Has no type declaration: " + dump(hal_obj)));
     }
     if (hal_obj._links.type.href == "http:\/\/lies.hazardous.se\/rest\/type\/node\/a_lie") {
         return 'Node';
@@ -75,27 +75,27 @@ function Node(i_node) {
         var ret_val = _node_hal.title[0].value;
         if (g_debug) console.log("Title: " + ret_val);
         return ret_val;
-    }
+    };
 
     var _get_image = function () {
-        var ret_val = _node_hal._links[_img_field]?_node_hal._links[_img_field][0].href:null;
+        var ret_val = _node_hal._links[_img_field] ? _node_hal._links[_img_field][0].href : null;
         if (g_debug) console.log("Image: " + ret_val);
         return ret_val;
-    }
+    };
 
     var _get_user = function () {
         var user_link = _node_hal._links[_user_field][0].href;
         var match = user_link.match(/\d+$/);
         var ret_val = parseInt(match[0]);
-        if (g_debug) console.log("User id: "+ret_val);
+        if (g_debug) console.log("User id: " + ret_val);
         return ret_val;
-    }
+    };
 
     var _get_created = function () {
-        var ret_val = _node_hal.created?_node_hal.created[0].value:0;
-        if (g_debug) console.log("Created: "+ret_val);
+        var ret_val = _node_hal.created ? _node_hal.created[0].value : 0;
+        if (g_debug) console.log("Created: " + ret_val);
         return ret_val;
-    }
+    };
 
     var _success_get = function (response) {
         if (g_debug) {
@@ -109,7 +109,7 @@ function Node(i_node) {
             throw (new Error("There's no such story... Now, who lied!?"));
         }
         _always_cb();
-    }
+    };
 
     var _success = function (msg) {
         if (g_debug) {
@@ -117,7 +117,7 @@ function Node(i_node) {
         }
         _ready = true;
         _always_cb();
-    }
+    };
 
     var _fail = function (xhr, err, exception) {
         if (g_debug) {
@@ -128,7 +128,7 @@ function Node(i_node) {
             return _success("Continue anyway");
         }
         _always_cb(err);
-    }
+    };
 
     // Public functions
     this.getTitle = _get_title;
@@ -137,21 +137,20 @@ function Node(i_node) {
 
     this.getJSON = function () {
         return JSON.stringify(_node_hal);
-    }
+    };
 
     this.render = function () {
-        var ret_val = '<div id="' + _get_created() + '" class="item-lie">'
+        return '<div id="' + _get_created() + '" class="item-lie">'
             + '<div class="item-title">' + _get_title() + '</div>'
             + (_get_image() ? ('<img class="item-proof" src="' + _get_image() + '"/>') : '')
             + '<a href="#" onClick="focus_stalk(' + _get_user() + ');">'
-            +'<div class="item-liar">Who lied?</div></a>'
+            + '<div class="item-liar">Who lied?</div></a>'
             + '</div>';
-        return ret_val;
-    }
+    };
 
     this.isReady = function () {
         return _ready;
-    }
+    };
 
     // Initialization
     // TODO: Break these out into separate funcs?
@@ -163,7 +162,7 @@ function Node(i_node) {
         // Make an ajax call to load the object from the server
         var load_uri = _get_node_uri + i_node.nid;
         console.log(dump(i_node));
-        console.log("Load:"+load_uri);
+        console.log("Load:" + load_uri);
         $.ajax({
             headers: {
                 Accept: 'application/hal+json'
@@ -184,7 +183,7 @@ function Node(i_node) {
         // Make an ajax call to save the object
         $.ajax({
             beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", g_curr_user.getAuth());
+                xhr.setRequestHeader("Authorization", g_fsm.user().getAuth());
             },
             headers: {
                 Accept: "application/hal+json",
@@ -195,7 +194,7 @@ function Node(i_node) {
             url: _submit_node_uri
         }).done(_success).fail(_fail);
     } else {
-        throw ( new Error ( "Invalid members of node initializing object" ) );
+        throw ( new Error("Invalid members of node initializing object") );
     }
 
     return this;

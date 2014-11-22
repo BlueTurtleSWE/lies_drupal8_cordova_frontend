@@ -16,14 +16,16 @@ const user_hal_tpl = {
 // and it can't be changed after initialization has finished
 function User(i_user) {
     if (typeof(i_user) != "object") {
-        throw(new Error("Invalid parameter when initializing User\n"+dump(i_user)));
+        throw(new Error("Invalid parameter when initializing User\n" + dump(i_user)));
     }
     // i_user is an object with one of the following setups
     // 1) A full hal object (no callback possible, instantly ready)
     // 2) name, mail, pass, edit (defaults to false), method (defaults to POST), cb (optional)
-    // 3) uid, cb (optional)
+    // 3) name, pass, cb (optional)
+    // 4) uid, cb (optional)
 
     // Private vars
+    var self = this;
     var _user_hal = null;
     var _ready = false;
 
@@ -36,25 +38,25 @@ function User(i_user) {
 
     var _admin_before_func = function (xhr) {
         xhr.setRequestHeader("Authorization", g_admin_login_base64);
-    }
+    };
 
     var _get_name = function () {
         var ret_val = _user_hal.name[0].value;
-        if (g_debug) console.log("Name: "+ret_val);
+        if (g_debug) console.log("Name: " + ret_val);
         return ret_val;
-    }
+    };
 
     var _get_pass = function () {
         var ret_val = _user_hal.pass[0].value;
-        if (g_debug) console.log("Pass: "+ret_val);
+        if (g_debug) console.log("Pass: " + ret_val);
         return ret_val;
-    }
+    };
 
-    var _user_auth = function (xhr) {
+    var _user_auth = function () {
         var ret_val = 'Basic ' + btoa(_get_name() + ':' + _get_pass());
-        if (g_debug) console.log('Auth: '+ret_val);
+        if (g_debug) console.log('Auth: ' + ret_val);
         return ret_val;
-    }
+    };
 
     var _success_get = function (response) {
         if (g_debug) {
@@ -68,7 +70,7 @@ function User(i_user) {
             throw (new Error("There's no such user... Now, who lied!?"));
         }
         _always_cb();
-    }
+    };
 
     var _success = function (msg) {
         if (g_debug) {
@@ -76,7 +78,7 @@ function User(i_user) {
         }
         _ready = true;
         _always_cb();
-    }
+    };
 
     var _fail = function (xhr, err, exception) {
         if (g_debug) {
@@ -87,7 +89,7 @@ function User(i_user) {
             return _success("Continue anyway");
         }
         _always_cb(err);
-    }
+    };
 
     // Public functions
     this.getName = _get_name;
@@ -95,20 +97,19 @@ function User(i_user) {
 
     this.getMail = function () {
         return _user_hal.mail[0].value;
-    }
+    };
 
     this.getJSON = function () {
         return JSON.stringify(_user_hal);
-    }
+    };
 
     this.render = function () {
-        var ret_val = '<div class="item-lie"><div class="item-title">The Liar is: ' + _get_name() + "</div></div>";
-        return ret_val;
-    }
+        return '<div class="item-lie"><div class="item-title">The Liar is: ' + _get_name() + "</div></div>";
+    };
 
     this.isReady = function () {
         return _ready;
-    }
+    };
 
     // Initialization
     // TODO: Break these out into separate funcs?
@@ -134,10 +135,10 @@ function User(i_user) {
         }).done(_success).fail(_fail);
     } else if (i_user.uid) {
         // Make an ajax call to load the object from the server
-        var auth = g_curr_user?g_curr_user.getAuth():getAuth();
+        var auth = g_fsm.user() ? g_fsm.user().getAuth() : self.getAuth();
         var load_uri = c_web_site + '/user/' + i_user.uid;
         console.log(dump(i_user));
-        console.log("Load:"+load_uri);
+        console.log("Load:" + load_uri);
         $.ajax({
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", auth);
@@ -154,21 +155,18 @@ function User(i_user) {
         _user_hal = user_hal_tpl;
         _user_hal.name[0].value = i_user.name;
         _user_hal.pass[0].value = i_user.pass;
-        var auth = 'Basic ' + btoa(_get_name() + ':' + _get_pass());
-        console.log('Manually calced auth: '+auth);
 
         // Make an ajax call to check the supplied credentials
         var test_dest = c_web_site + '/user/1';
-        console.log('Test dest:'+test_dest);
+        console.log('Test dest:' + test_dest);
         $.ajax({
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", _user_auth());
             },
             headers: {
-                Accept : 'application/hal+json'
+                Accept: 'application/hal+json'
             },
             type: 'GET',
-//            url: 'http://lies.hazardous.se/user/1'
             url: c_web_site + '/user/1'
         }).done(_success)
             .fail(_fail);
