@@ -87,13 +87,12 @@ function BrowseState(i_state) {
     };
 
     this.done = function () {
-        bugme.log("Browse done");
         self.parent().switchState({state: c_browse_state});
     };
 
-    this.cancel = function () {
+    this.cancel = function (new_state) {
         bugme.log("Browse cancel");
-        self.parent().switchState({state: c_browse_state});
+        self.parent().switchState({state: new_state?new_state:c_browse_state});
     };
 
     // Initialize state
@@ -123,6 +122,7 @@ function StalkState(i_state) {
     }
 
     function _cleanup() {
+        bugme.log("StalkState _cleanup called");
         list_elm.empty();
     }
 
@@ -131,10 +131,8 @@ function StalkState(i_state) {
         return this.constructor.name;
     }
 
-    this.update = function () {
-        // TODO: Implement loading of lies here?
-        bugme.log("Stalk update");
-    };
+    // TODO: Implement loading of lies here
+    this.update = false;
 
     this.done = function () {
         bugme.log("Stalk done");
@@ -142,9 +140,9 @@ function StalkState(i_state) {
         _cleanup();
     };
 
-    this.cancel = function () {
+    this.cancel = function (new_state) {
         bugme.log("Stalk cancel");
-        self.parent().switchState({state: c_browse_state});
+        self.parent().switchState({state: new_state?new_state:c_browse_state});
         _cleanup();
     }
 }
@@ -155,7 +153,9 @@ function LoginState(i_state) {
     State.apply(this, arguments);
 
     //Private vars and consts
+    bugme.log("LoginState input\n"+bugme.dump(i_state, 1));
     var self = this;
+    var alive = true;
     var current_user = this.parent().user();
     var next_state_data = i_state.data; // i_state data for state that was pre-empted
     var event_sel = "click tap";
@@ -170,18 +170,18 @@ function LoginState(i_state) {
 
     // Private funcs
     function _cleanup() {
+        bugme.log("LoginState _cleanup called");
         // Reset all input fields
-        $('#identity-lies input').each(function (elm) {
-            $(elm).val($(elm).attr('def_label'));
-            $(elm).off(event_sel);
-            $(elm).off('focus');
-            $(elm).off('blur');
+        $('#identity-lies input').each(function () {
+            $(this).val($(this).attr('def_label'));
+            $(this).off(event_sel);
         });
         // Show all buttons, and turn off their actions
-        $('#identity-lies a').each(function (elm) {
-            $(elm).show();
-            $(elm).off(event_sel);
+        $('#identity-lies a').each(function () {
+            $(this).show();
+            $(this).off(event_sel);
         })
+        alive = false;
     }
 
     function _verify_input(mail) {
@@ -206,12 +206,14 @@ function LoginState(i_state) {
         return this.constructor.name;
     }
 
-    this.update = function () {
-        bugme.log("Login update (shouldn't be called?)");
-    };
+    this.update = false;
 
     this.done = function (msg) {
-        bugme.log("Login done");
+        bugme.log("Login done\n"+msg);
+        if (!alive) {
+            bugme.log("...called on dead object!");
+            return;
+        }
         if (current_user) { // Login or create
             if (current_user.isReady()) {
                 self.parent().setUser(current_user);
@@ -230,8 +232,13 @@ function LoginState(i_state) {
         _cleanup();
     };
 
-    this.cancel = function () {
-        self.parent().switchState({state: c_browse_state});
+    this.cancel = function (new_state) {
+        if (!alive) {
+            bugme.log("Cancel login called on dead object");
+            return;
+        }
+        self.parent().switchState({state: new_state?new_state:c_browse_state});
+        _cleanup();
     };
 
 
@@ -247,6 +254,7 @@ function LoginState(i_state) {
         });
 
         btn_logout.on(event_sel, function () {
+            bugme.log("Button logout pressed");
             current_user = null;
             self.done();
             return false;
@@ -359,6 +367,7 @@ function ImageState(i_state) {
     }
 
     function _success(img_uri) {
+        bugme.log("Camera success");
         if (!alive) return;
         local_img_uri = img_uri;
         spinner.hide();
@@ -369,6 +378,7 @@ function ImageState(i_state) {
     }
 
     function _fail() {
+        bugme.log("Camera fail");
         if (!alive) return;
         spinner.hide();
         self.cancel();
@@ -434,12 +444,14 @@ function ImageState(i_state) {
         return this.constructor.name;
     }
 
-    this.update = function () {
+    this.update = false;
 
-    };
-
-    this.cancel = function () {
-        self.parent().switchState({state: c_submit_state, resume: sibling});
+    this.cancel = function (new_state) {
+        if (new_state && new_state != c_submit_state) {
+            self.parent().switchState({state: new_state});
+        } else {
+            self.parent().switchState({state: c_submit_state, resume: sibling});
+        }
         _cleanup();
     };
 
@@ -468,6 +480,12 @@ function ImageState(i_state) {
     } else {
         alert("You lied!\nThere's no camera here...");
     }
+
+    // TODO: Add other desktop platforms here (for debugging)
+    if (navigator.platform == "MacIntel") {
+        setTimeout(_fail, 500);
+    }
+
     bugme.log("ImageState finished");
 }
 
@@ -500,13 +518,13 @@ function LieState(i_state) {
     function _cleanup() {
         bugme.log("LieState _cleanup called");
         // Reset all input fields
-        $('#tell-a-lie input').each(function (elm) {
-            $(elm).val($(elm).attr('def_label'));
+        $('#tell-a-lie input').each(function () {
+            $(this).val($(this).attr('def_label'));
         });
         // Show all buttons, and turn off their actions
-        $('#tell-a-lie a').each(function (elm) {
-            $(elm).show();
-            $(elm).off(event_sel);
+        $('#tell-a-lie a').each(function () {
+            $(this).show();
+            $(this).off(event_sel);
         });
         sibling = null;
         bugme.log("LieState _cleanup finished");
@@ -531,12 +549,10 @@ function LieState(i_state) {
         sibling = i_sib; // Keep around for cleanup
     };
 
-    this.update = function () {
+    this.update = false;
 
-    };
-
-    this.cancel = function () {
-        self.parent().switchState({state: c_browse_state});
+    this.cancel = function (new_state) {
+        self.parent().switchState({state: new_state?new_state:c_browse_state});
         _cleanup();
     };
 

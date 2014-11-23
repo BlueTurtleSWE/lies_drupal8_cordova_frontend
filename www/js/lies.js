@@ -79,13 +79,6 @@ function FSM() {
         }
 
         current_state_id = i_switch.state;
-        if (current_state_id == c_browse_state) {
-            btn_refresh.show();
-            btn_back.hide();
-        } else {
-            btn_refresh.hide();
-            btn_back.show();
-        }
 
         // TODO: Which is more efficient, creating new a new state object each time we're changing focus?
         // TODO: Or reusing one object of each? A bit worried about memory use vs stale values
@@ -112,6 +105,18 @@ function FSM() {
                 break;
             default:
                 // Impossible to reach
+        }
+
+        if (current_state_id != c_browse_state) {
+            btn_back.show();
+        } else {
+            btn_back.hide();
+        }
+
+        if (current_state.update) {
+            btn_refresh.show();
+        } else {
+            btn_refresh.hide();
         }
     };
 
@@ -168,15 +173,15 @@ function FSM() {
 
     // Bind the toolbar buttons here - instead of in index.html
     btn_add.on(event_sel, function () {
-        self.switchState({state: c_submit_state});
+        current_state.cancel(c_submit_state);
         return false;
     });
     btn_user.on(event_sel, function () {
-        self.switchState({state: c_login_state});
+        current_state.cancel(c_login_state);
         return false;
     });
     btn_back.on(event_sel, function () {
-        current_state.cancel();
+        current_state.cancel(c_browse_state);
         return false;
     });
     btn_refresh.on(event_sel, function () {

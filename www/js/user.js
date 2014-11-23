@@ -39,20 +39,13 @@ function User(i_user) {
     };
 
     var _get_pass = function () {
-        var ret_val = _user_hal.pass[0].value;
-        bugme.log("Pass: " + ret_val);
-        return ret_val;
+        return _user_hal.pass[0].value;
     };
 
     var _success_get = function (response) {
-        bugme.log(bugme.dump(response));
-        if (typeof(response) == 'object' && response._links) {
-            _user_hal = response;
-            _ready = true;
-        } else {
-            alert("Error loading user from webb");
-            throw (new Error("There's no such user... Now, who lied!?"));
-        }
+        bugme.assert(typeof(response) == "object" && response._links, "There's no such user");
+        _user_hal = response;
+        _ready = true;
         _always_cb();
     };
 
@@ -64,8 +57,8 @@ function User(i_user) {
 
     var _fail = function (xhr, err, exception) {
         bugme.log(err);
-        bugme.log(bugme.dump(exception));
         if (err.match(/parsererror/)) {
+            bugme.log("Continue anyway");
             return _success("Continue anyway");
         }
         _always_cb(err);

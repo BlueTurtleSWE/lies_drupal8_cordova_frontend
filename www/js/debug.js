@@ -39,7 +39,7 @@ bugme.dump = bugme.enable ? function (arr, max_level_param, level) {
     var max_level = max_level_param ? max_level_param : 2;
     var dumped_text = "";
     if (!level) level = 0;
-    if (level > max_level) return;
+    if (level > max_level) return ""+typeof(arr)+"\n";
 
     //The padding given at the beginning of the line.
     var level_padding = "";

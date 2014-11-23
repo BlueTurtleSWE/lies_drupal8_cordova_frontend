@@ -74,7 +74,6 @@ function Node(i_node) {
     };
 
     var _success_get = function (response) {
-        bugme.log(bugme.dump(response));
         if (typeof(response) == 'object' && response._links) {
             _node_hal = response;
             _ready = true;
@@ -86,7 +85,6 @@ function Node(i_node) {
     };
 
     var _success = function (msg) {
-        bugme.log(bugme.dump(msg));
         _ready = true;
         _always_cb();
     };
@@ -140,9 +138,9 @@ function Node(i_node) {
         _node_hal = i_node;
         _ready = true;
     } else if (i_node.nid) {
+        bugme.assert(typeof(i_node.nid) == "number" && i_node.nid > 0, "Invalid node id supplied");
         // Make an ajax call to load the object from the server
         var load_uri = _get_node_uri + i_node.nid;
-        bugme.log(bugme.dump(i_node));
         bugme.log("Load:" + load_uri);
         $.ajax({
             headers: {
