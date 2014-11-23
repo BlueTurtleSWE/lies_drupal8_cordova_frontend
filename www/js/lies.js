@@ -5,17 +5,17 @@ const c_stalk_state = 2;
 const c_login_state = 3;
 const c_image_state = 4;
 const c_submit_state = 5;
+const c_max_state = 6;
 
 const c_host = 'lies.hazardous.se';
 const c_web_site = 'http://' + c_host;
-const g_debug = true;
 
 // Initializing globals
 var g_fsm = null;
 
 // The onload stuff
 document.addEventListener('deviceready', function () {
-    console.log("Device ready");
+    bugme.log("Device ready");
 
     if (!window.btoa) window.btoa = $.base64.btoa;
     if (!window.atob) window.atob = $.base64.atob;
@@ -67,6 +67,9 @@ function FSM() {
     // data (for stalk and login states),
     // resume (for coming back to resume from image)
     this.switchState = function (i_switch) {
+        bugme.assert(typeof(i_switch) == "object", "FSM.switchState called with inappropriate arguments\n"+bugme.dump(i_switch));
+        bugme.assert(i_switch.state && i_switch.state > c_init_state && i_switch.state < c_max_state,
+            "FSM.switchState called with invalid state argument");
         spinner.show();
         if (!_restricted_check(i_switch.state)) {
             return self.switchState({
@@ -108,7 +111,7 @@ function FSM() {
                 current_state = i_switch.resume ? i_switch.resume : new LieState({parent: self});
                 break;
             default:
-                throw ( new Error("Unknown state:" + current_state_id + "\n" + dump(i_switch)) );
+                // Impossible to reach
         }
     };
 

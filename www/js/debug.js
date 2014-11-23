@@ -1,9 +1,16 @@
-// These are debug functions, replace with empty funcs in production code by setting debug_funcs to false
-var debug_funcs = true;
+// Create a namespace for debugging
+var bugme = {};
+bugme.enable = true;
+
+// Log if debug is set, otherwise no-op
+bugme.log = bugme.enable ? function  (msg) {
+    console.log(msg);
+} : function () {
+};
 
 // Simple assert
 // Borrowed from: http://stackoverflow.com/questions/15313418/javascript-assert
-var assert = debug_funcs ? function (condition, message) {
+bugme.assert = bugme.enable ? function (condition, message) {
     if (!condition) {
         message = message || "Assertion failed";
         if (typeof Error !== "undefined") {
@@ -28,8 +35,7 @@ var assert = debug_funcs ? function (condition, message) {
  * Current version improved by filip@blueturtle.nu to add max levels
  */
 
-
-var dump = debug_funcs ? function (arr, max_level_param, level) {
+bugme.dump = bugme.enable ? function (arr, max_level_param, level) {
     var max_level = max_level_param ? max_level_param : 2;
     var dumped_text = "";
     if (!level) level = 0;
@@ -44,7 +50,7 @@ var dump = debug_funcs ? function (arr, max_level_param, level) {
             var value = arr[item];
             if (typeof(value) == 'object') { //If it is an array,
                 dumped_text += level_padding + "'" + item + "' ...\n";
-                dumped_text += dump(value, max_level, level + 1);
+                dumped_text += bugme.dump(value, max_level, level + 1);
             } else if (typeof(value) != 'undefined') {
                 dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
             }

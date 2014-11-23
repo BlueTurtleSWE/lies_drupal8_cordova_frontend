@@ -15,9 +15,7 @@ const user_hal_tpl = {
 // User is a value object, it will either GET, POST or PATCH on initialization
 // and it can't be changed after initialization has finished
 function User(i_user) {
-    if (typeof(i_user) != "object") {
-        throw(new Error("Invalid parameter when initializing User\n" + dump(i_user)));
-    }
+    bugme.assert(typeof(i_user) == "object", "Invalid parameter when initializing User\n" + bugme.dump(i_user));
     // i_user is an object with one of the following setups
     // 1) A full hal object (no callback possible, instantly ready)
     // 2) name, mail, pass, edit (defaults to false), method (defaults to POST), cb (optional)
@@ -42,26 +40,24 @@ function User(i_user) {
 
     var _get_name = function () {
         var ret_val = _user_hal.name[0].value;
-        if (g_debug) console.log("Name: " + ret_val);
+        bugme.log("Name: " + ret_val);
         return ret_val;
     };
 
     var _get_pass = function () {
         var ret_val = _user_hal.pass[0].value;
-        if (g_debug) console.log("Pass: " + ret_val);
+        bugme.log("Pass: " + ret_val);
         return ret_val;
     };
 
     var _user_auth = function () {
         var ret_val = 'Basic ' + btoa(_get_name() + ':' + _get_pass());
-        if (g_debug) console.log('Auth: ' + ret_val);
+        bugme.log('Auth: ' + ret_val);
         return ret_val;
     };
 
     var _success_get = function (response) {
-        if (g_debug) {
-            console.log(dump(response));
-        }
+        bugme.log(bugme.dump(response));
         if (typeof(response) == 'object' && response._links) {
             _user_hal = response;
             _ready = true;
@@ -73,18 +69,14 @@ function User(i_user) {
     };
 
     var _success = function (msg) {
-        if (g_debug) {
-            console.log(dump(msg));
-        }
+        bugme.log(bugme.dump(msg));
         _ready = true;
         _always_cb();
     };
 
     var _fail = function (xhr, err, exception) {
-        if (g_debug) {
-            console.log(err);
-            console.log(dump(exception));
-        }
+        bugme.log(err);
+        bugme.log(bugme.dump(exception));
         if (err.match(/parsererror/)) {
             return _success("Continue anyway");
         }
@@ -137,8 +129,8 @@ function User(i_user) {
         // Make an ajax call to load the object from the server
         var auth = g_fsm.user() ? g_fsm.user().getAuth() : self.getAuth();
         var load_uri = c_web_site + '/user/' + i_user.uid;
-        console.log(dump(i_user));
-        console.log("Load:" + load_uri);
+        bugme.log(bugme.dump(i_user));
+        bugme.log("Load:" + load_uri);
         $.ajax({
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", auth);
@@ -158,7 +150,7 @@ function User(i_user) {
 
         // Make an ajax call to check the supplied credentials
         var test_dest = c_web_site + '/user/1';
-        console.log('Test dest:' + test_dest);
+        bugme.log('Test dest:' + test_dest);
         $.ajax({
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", _user_auth());

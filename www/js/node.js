@@ -4,12 +4,9 @@
 
 
 function hal_type(hal_obj) {
-    if (!hal_obj._links) {
-        throw (new Error("Object is not a hal object: " + dump(hal_obj)));
-    }
-    if (!hal_obj._links.type) {
-        throw (new Error("HAL object invalid. Has no type declaration: " + dump(hal_obj)));
-    }
+    bugme.assert(hal_obj._links, "Object is not a hal object\n" + bugme.dump(hal_obj));
+    bugme.assert(hal_obj._links.type, "HAL object invalid. Has no type declaration" + bugme.dump(hal_obj));
+
     if (hal_obj._links.type.href == "http:\/\/lies.hazardous.se\/rest\/type\/node\/a_lie") {
         return 'Node';
     }
@@ -49,9 +46,7 @@ const node_hal_tpl = {
 
 
 function Node(i_node) {
-    if (typeof(i_node) != "object") {
-        throw(new Error("Invalid parameter when initializing Node\n" + dump(i_node)));
-    }
+    bugme.assert(typeof(i_node) == "object", "Invalid parameter when initializing Node\n" + bugme.dump(i_node));
     // i_node is an object with one of the following setups
     // 1) A full hal object (no callback possible, instantly ready)
     // 2) title, img_uri (defaults to null), img_uuid (defaults to null), cb (optional)
@@ -73,13 +68,13 @@ function Node(i_node) {
 
     var _get_title = function () {
         var ret_val = _node_hal.title[0].value;
-        if (g_debug) console.log("Title: " + ret_val);
+        bugme.log("Title: " + ret_val);
         return ret_val;
     };
 
     var _get_image = function () {
         var ret_val = _node_hal._links[_img_field] ? _node_hal._links[_img_field][0].href : null;
-        if (g_debug) console.log("Image: " + ret_val);
+        bugme.log("Image: " + ret_val);
         return ret_val;
     };
 
@@ -87,20 +82,18 @@ function Node(i_node) {
         var user_link = _node_hal._links[_user_field][0].href;
         var match = user_link.match(/\d+$/);
         var ret_val = parseInt(match[0]);
-        if (g_debug) console.log("User id: " + ret_val);
+        bugme.log("User id: " + ret_val);
         return ret_val;
     };
 
     var _get_created = function () {
         var ret_val = _node_hal.created ? _node_hal.created[0].value : 0;
-        if (g_debug) console.log("Created: " + ret_val);
+        bugme.log("Created: " + ret_val);
         return ret_val;
     };
 
     var _success_get = function (response) {
-        if (g_debug) {
-            console.log(dump(response));
-        }
+        bugme.log(bugme.dump(response));
         if (typeof(response) == 'object' && response._links) {
             _node_hal = response;
             _ready = true;
@@ -112,18 +105,14 @@ function Node(i_node) {
     };
 
     var _success = function (msg) {
-        if (g_debug) {
-            console.log(dump(msg));
-        }
+        bugme.log(bugme.dump(msg));
         _ready = true;
         _always_cb();
     };
 
     var _fail = function (xhr, err, exception) {
-        if (g_debug) {
-            console.log(err);
-            console.log(dump(exception));
-        }
+        bugme.log(err);
+        bugme.log(bugme.dump(exception));
         if (err.match(/parsererror/)) {
             return _success("Continue anyway");
         }
@@ -161,8 +150,8 @@ function Node(i_node) {
     } else if (i_node.nid) {
         // Make an ajax call to load the object from the server
         var load_uri = _get_node_uri + i_node.nid;
-        console.log(dump(i_node));
-        console.log("Load:" + load_uri);
+        bugme.log(bugme.dump(i_node));
+        bugme.log("Load:" + load_uri);
         $.ajax({
             headers: {
                 Accept: 'application/hal+json'

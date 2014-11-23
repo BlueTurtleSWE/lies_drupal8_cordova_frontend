@@ -4,9 +4,7 @@
 
 
 function State(i_state) {
-    if (typeof(i_state) != "object") {
-        throw(new Error("Invalid parameter when initializing State (basic)\n" + dump(i_state)));
-    }
+    bugme.assert(typeof(i_state) == "object", "Invalid parameter when initializing State (basic)\n" + bugme.dump(i_state));
     // i_state is an object with at least the following parameters
     // next_state, is the which this state should transition to when closed (-1 means to save state)
     // parent, is the FSM which arbitrates between states
@@ -26,15 +24,15 @@ function State(i_state) {
     }
 
     this.update = function () {
-        console.log("Override function update() in class!");
+        bugme.log("Override function update() in class!");
     };
 
     this.done = function () {
-        console.log("Override function done() in class!");
+        bugme.log("Override function done() in class!");
     };
 
     this.cancel = function () {
-        console.log("Override function cancel() in class!");
+        bugme.log("Override function cancel() in class!");
     };
 }
 
@@ -42,10 +40,7 @@ function State(i_state) {
 // There can only be one! This state is never killed (as long as the app is running)
 // Thus, it has no next state - but is simply sleeping when other states are active
 function BrowseState(i_state) {
-    if (typeof(i_state) != "object") {
-        throw(new Error("Invalid parameter when initializing BrowseState\n" + dump(i_state)));
-    }
-
+    bugme.assert(typeof(i_state) == "object", "Invalid parameter when initializing BrowseState\n" + bugme.dump(i_state));
     State.apply(this, arguments);
 
     // Private vars and consts
@@ -70,7 +65,7 @@ function BrowseState(i_state) {
         + '<div class="item-title">Somthing broke</div>'
         + '<div class="item-liar">Blame Master Liar</div>'
         + '</div>');
-        console.log(err);
+        bugme.log(err);
         spinner.hide();
     }
 
@@ -80,7 +75,7 @@ function BrowseState(i_state) {
     }
 
     this.update = function () {
-        console.log("Browse update");
+        bugme.log("Browse update");
         spinner.show();
         $.ajax({
             headers: {
@@ -92,12 +87,12 @@ function BrowseState(i_state) {
     };
 
     this.done = function () {
-        console.log("Browse done");
+        bugme.log("Browse done");
         self.parent().switchState({state: c_browse_state});
     };
 
     this.cancel = function () {
-        console.log("Browse cancel");
+        bugme.log("Browse cancel");
         self.parent().switchState({state: c_browse_state});
     };
 
@@ -107,13 +102,8 @@ function BrowseState(i_state) {
 
 // Display all about the individual you want to stalk
 function StalkState(i_state) {
-    if (typeof(i_state) != "object") {
-        throw(new Error("Invalid parameter when initializing StalkState\n" + dump(i_state)));
-    }
-    if (!i_state.stalk_uid) {
-        throw(new Error("Invalid parameters, missing stalk_uid: " + dump(i_state)));
-    }
-
+    bugme.assert(typeof(i_state) == "object", "Invalid parameter when initializing StalkState\n" + bugme.dump(i_state));
+    bugme.assert(i_state.stalk_uid, "Invalid parameters, missing stalk_uid\n" + bugme.dump(i_state));
     State.apply(this, arguments);
 
     // Private vars and consts
@@ -143,17 +133,17 @@ function StalkState(i_state) {
 
     this.update = function () {
         // TODO: Implement loading of lies here?
-        console.log("Stalk update");
+        bugme.log("Stalk update");
     };
 
     this.done = function () {
-        console.log("Stalk done");
+        bugme.log("Stalk done");
         self.parent().switchState({state: c_browse_state});
         _cleanup();
     };
 
     this.cancel = function () {
-        console.log("Stalk cancel");
+        bugme.log("Stalk cancel");
         self.parent().switchState({state: c_browse_state});
         _cleanup();
     }
@@ -161,10 +151,7 @@ function StalkState(i_state) {
 
 // Take care of logging in/out or editing preferences
 function LoginState(i_state) {
-    if (typeof(i_state) != "object") {
-        throw(new Error("Invalid parameter when initializing LoginState\n" + dump(i_state)));
-    }
-
+    bugme.assert(typeof(i_state) == "object", "Invalid parameter when initializing LoginState\n" + bugme.dump(i_state));
     State.apply(this, arguments);
 
     //Private vars and consts
@@ -220,17 +207,17 @@ function LoginState(i_state) {
     }
 
     this.update = function () {
-        console.log("Login update (shouldn't be called?)");
+        bugme.log("Login update (shouldn't be called?)");
     };
 
     this.done = function (msg) {
-        console.log("Login done");
+        bugme.log("Login done");
         if (current_user) { // Login or create
             if (current_user.isReady()) {
                 self.parent().setUser(current_user);
             } else {
                 if (msg) alert(msg);
-                console.log("Login failed");
+                bugme.log("Login failed");
                 return;
             }
         } else { // Logout
@@ -269,7 +256,7 @@ function LoginState(i_state) {
         btn_create.hide();
     } else {
         btn_login.on(event_sel, function () {
-            console.log("Button login pressed");
+            bugme.log("Button login pressed");
             if (_verify_input()) {
                 current_user = new User({name: input_alias.val(), pass: input_pass.val(), cb: self.done});
             }
@@ -277,7 +264,7 @@ function LoginState(i_state) {
         });
 
         btn_create.on(event_sel, function () {
-            console.log("Button create user pressed");
+            bugme.log("Button create user pressed");
             if (_verify_input(true)) {
                 current_user = new User({
                     name: input_alias.val(),
@@ -299,16 +286,11 @@ function LoginState(i_state) {
 
 // Take care of snapping and uploading images
 function ImageState(i_state) {
-    if (typeof(i_state) != "object") {
-        throw(new Error("Invalid parameter when initializing ImageState\n" + dump(i_state)));
-    }
-
+    bugme.assert(typeof(i_state) == "object", "Invalid parameter when initializing ImageState\n" + bugme.dump(i_state));
+    bugme.assert(i_state.sibling, "ImageState inappropriately called. Missing sibling");
+    bugme.log("Created ImageState");
     State.apply(this, arguments);
 
-    console.log("Created ImageState");
-    if (!i_state.sibling) {
-        throw ( new Error("ImageState inappropriately called. Missing sibling"));
-    }
 
     // Private consts and vars
     var self = this;
@@ -338,7 +320,7 @@ function ImageState(i_state) {
 
     // Private funcs
     function _cleanup() {
-        console.log("ImageState _cleanup called");
+        bugme.log("ImageState _cleanup called");
         proof_elm.attr('src', proof_elm.attr('def_src'));
         sibling = null;
     }
@@ -346,7 +328,7 @@ function ImageState(i_state) {
     function _upload_image() {
         var img_file_name_matches = local_img_uri.match(/.*\/(\w+\.jpg)/);
         var img_file_name = img_file_name_matches[1];
-        console.log("File name part of " + local_img_uri + " is img_file_name");
+        bugme.log("File name part of " + local_img_uri + " is img_file_name");
 
         // Start uploading pic in the background
         var form_params = new FormParams();
@@ -363,7 +345,7 @@ function ImageState(i_state) {
 
         options.params = form_params;
 
-        console.log('' + dump(options));
+        bugme.log('' + bugme.dump(options));
 
         var ft = new FileTransfer();
         ft.upload(
@@ -397,10 +379,10 @@ function ImageState(i_state) {
         var matches = /name="form_build_id"\s+value="(form-.+?)"/gm.exec(data);
         if (matches && matches.length) {
             form_build_id = matches[1];
-            console.log('Form build id:' + form_build_id);
+            bugme.log('Form build id:' + form_build_id);
         }
         else {
-            console.log('Bad regex!!!?');
+            bugme.log('Bad regex!!!?');
         }
     }
 
@@ -419,14 +401,14 @@ function ImageState(i_state) {
         if (typeof(response) == "object" && response.uuid) {
             sibling.setProof(data.response, self);
         } else {
-            console.log("Bad image upload response:" + dump(data.response))
+            bugme.log("Bad image upload response\n" + bugme.dump(data.response))
         }
         _cleanup();
     }
 
     function _fail_form_upload(err) {
         if (!alive) return;
-        console.log("Failed to upload image:" + err);
+        bugme.log("Failed to upload image:" + err);
         if (++upload_img_count <= max_load_form) {
             _upload_image();
         } else { // Give up
@@ -486,16 +468,13 @@ function ImageState(i_state) {
     } else {
         alert("You lied!\nThere's no camera here...");
     }
-    console.log("ImageState finished");
+    bugme.log("ImageState finished");
 }
 
 // Take care of entering and uploading lies
 function LieState(i_state) {
-    if (typeof(i_state) != "object") {
-        throw(new Error("Invalid parameter when initializing LieState\n" + dump(i_state)));
-    }
-    console.log("Created LieState");
-
+    bugme.assert(typeof(i_state) == "object", "Invalid parameter when initializing LieState\n" + bugme.dump(i_state));
+    bugme.log("Created LieState");
     State.apply(this, arguments);
 
     // Private vars
@@ -519,7 +498,7 @@ function LieState(i_state) {
     }
 
     function _cleanup() {
-        console.log("LieState _cleanup called");
+        bugme.log("LieState _cleanup called");
         // Reset all input fields
         $('#tell-a-lie input').each(function (elm) {
             $(elm).val($(elm).attr('def_label'));
@@ -530,7 +509,7 @@ function LieState(i_state) {
             $(elm).off(event_sel);
         });
         sibling = null;
-        console.log("LieState _cleanup finished");
+        bugme.log("LieState _cleanup finished");
     }
 
     function _verify_input() {
