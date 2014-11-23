@@ -21,6 +21,10 @@ function State(i_state) {
         return parent;
     };
 
+    this.name = function () {
+        return this.constructor.name;
+    }
+
     this.update = function () {
         console.log("Override function update() in class!");
     };
@@ -71,6 +75,10 @@ function BrowseState(i_state) {
     }
 
     // Public funcs
+    this.name = function () {
+        return this.constructor.name;
+    }
+
     this.update = function () {
         console.log("Browse update");
         spinner.show();
@@ -93,6 +101,7 @@ function BrowseState(i_state) {
         self.parent().switchState({state: c_browse_state});
     };
 
+    // Initialize state
     self.update();
 }
 
@@ -128,6 +137,10 @@ function StalkState(i_state) {
     }
 
     // Public funcs
+    this.name = function () {
+        return this.constructor.name;
+    }
+
     this.update = function () {
         // TODO: Implement loading of lies here?
         console.log("Stalk update");
@@ -202,6 +215,10 @@ function LoginState(i_state) {
 
 
     // Public funcs
+    this.name = function () {
+        return this.constructor.name;
+    }
+
     this.update = function () {
         console.log("Login update (shouldn't be called?)");
     };
@@ -237,21 +254,20 @@ function LoginState(i_state) {
         var mail = current_user.getMail() ? current_user.getMail() : input_email.attr('def_label');
         input_email.val(mail);
 
-        // Activate buttons
         btn_edit.on(event_sel, function () {
             alert('Edit settings not implemented');
             return false;
         });
+
         btn_logout.on(event_sel, function () {
             current_user = null;
             self.done();
             return false;
         });
-        // Hide inactive
+
         btn_login.hide();
         btn_create.hide();
     } else {
-        // Activate buttons
         btn_login.on(event_sel, function () {
             console.log("Button login pressed");
             if (_verify_input()) {
@@ -259,6 +275,7 @@ function LoginState(i_state) {
             }
             return false;
         });
+
         btn_create.on(event_sel, function () {
             console.log("Button create user pressed");
             if (_verify_input(true)) {
@@ -272,10 +289,11 @@ function LoginState(i_state) {
             }
             return false;
         });
-        // Hide inactive
+
         btn_edit.hide();
         btn_logout.hide();
     }
+
     spinner.hide();
 }
 
@@ -287,11 +305,12 @@ function ImageState(i_state) {
 
     State.apply(this, arguments);
 
+    console.log("Created ImageState");
     if (!i_state.sibling) {
         throw ( new Error("ImageState inappropriately called. Missing sibling"));
     }
 
-    // Private vars
+    // Private consts and vars
     var self = this;
     var sibling = i_state.sibling;
     var form_build_id = null;
@@ -319,7 +338,9 @@ function ImageState(i_state) {
 
     // Private funcs
     function _cleanup() {
+        console.log("ImageState _cleanup called");
         proof_elm.attr('src', proof_elm.attr('def_src'));
+        sibling = null;
     }
 
     function _upload_image() {
@@ -362,16 +383,13 @@ function ImageState(i_state) {
         proof_btn.hide();
         proof_elm.attr('src', img_uri);
         proof_elm.show();
-        self.parent().switchState({state: c_submit_state, resume: sibling});
-
-        _upload_image();
+        self.done();
     }
 
     function _fail() {
         if (!alive) return;
         spinner.hide();
         self.cancel();
-        self.parent().switchState({state: c_submit_state, resume: sibling});
     }
 
     function _success_form_id(data) {
@@ -403,6 +421,7 @@ function ImageState(i_state) {
         } else {
             console.log("Bad image upload response:" + dump(data.response))
         }
+        _cleanup();
     }
 
     function _fail_form_upload(err) {
@@ -410,17 +429,17 @@ function ImageState(i_state) {
         console.log("Failed to upload image:" + err);
         if (++upload_img_count <= max_load_form) {
             _upload_image();
-        } else {
+        } else { // Give up
             alert("Failed to upload image after trying " + max_load_form + "\nVery trying indeed");
+            _cleanup();
+            alive = false;
         }
-        _cleanup();
-        alive = false;
     }
 
     function _fetch_image_upload_form() {
         $.ajax({
             beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", parent.user().getAuth());
+                xhr.setRequestHeader("Authorization", self.parent().user().getAuth());
             },
             url: hack_upload_uri,
             type: 'GET'
@@ -429,18 +448,22 @@ function ImageState(i_state) {
 
 
     // Public funcs
+    this.name = function () {
+        return this.constructor.name;
+    }
+
     this.update = function () {
 
     };
 
     this.cancel = function () {
-        alive = false;
+        self.parent().switchState({state: c_submit_state, resume: sibling});
         _cleanup();
     };
 
     this.done = function () {
-        alive = false;
-        _cleanup();
+        _upload_image();
+        self.parent().switchState({state: c_submit_state, resume: sibling});
     };
 
     // Initialize state
@@ -463,6 +486,7 @@ function ImageState(i_state) {
     } else {
         alert("You lied!\nThere's no camera here...");
     }
+    console.log("ImageState finished");
 }
 
 // Take care of entering and uploading lies
@@ -470,13 +494,14 @@ function LieState(i_state) {
     if (typeof(i_state) != "object") {
         throw(new Error("Invalid parameter when initializing LieState\n" + dump(i_state)));
     }
+    console.log("Created LieState");
 
     State.apply(this, arguments);
 
     // Private vars
     var self = this;
     var proof = null;
-    var spinner = $('spinner');
+    var spinner = $('#spinner');
     var input_lie = $('#brand-new-lies');
     var btn_tell = $('#tell-the-world');
     var btn_snap = $('#get-your-proof');
@@ -491,10 +516,10 @@ function LieState(i_state) {
         if (!node.isReady()) {
             alert("Failed to submit lie: " + msg);
         }
-        self.parent().switchState(c_browse_state);
     }
 
     function _cleanup() {
+        console.log("LieState _cleanup called");
         // Reset all input fields
         $('#tell-a-lie input').each(function (elm) {
             $(elm).val($(elm).attr('def_label'));
@@ -503,7 +528,9 @@ function LieState(i_state) {
         $('#tell-a-lie a').each(function (elm) {
             $(elm).show();
             $(elm).off(event_sel);
-        })
+        });
+        sibling = null;
+        console.log("LieState _cleanup finished");
     }
 
     function _verify_input() {
@@ -516,6 +543,10 @@ function LieState(i_state) {
 
 
     // Public funcs
+    this.name = function () {
+        return this.constructor.name;
+    }
+
     this.setProof = function (i_upload_obj, i_sib) {
         proof = i_upload_obj;
         sibling = i_sib; // Keep around for cleanup
@@ -526,7 +557,7 @@ function LieState(i_state) {
     };
 
     this.cancel = function () {
-        if (sibling) sibling.cancel();
+        self.parent().switchState({state: c_browse_state});
         _cleanup();
     };
 
@@ -541,11 +572,11 @@ function LieState(i_state) {
         }
         node = new Node(node_input);
 
-        if (sibling) sibling.done();
+        self.parent().switchState({state: c_browse_state});
         _cleanup();
     };
 
-    // Bind functions to buttons and input fields
+    // Initialize state
     btn_tell.on(event_sel, function () {
         self.done();
         return false;
@@ -555,6 +586,8 @@ function LieState(i_state) {
         self.parent().switchState({state: c_image_state, sibling: self});
         return false;
     });
+
+    spinner.hide();
 }
 
 

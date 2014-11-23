@@ -134,6 +134,10 @@ function FSM() {
         current_state.cancel();
     };
 
+    this.state = function () {
+        return current_state;
+    }
+
     this.stalk = function (uid) { // Convenient short-hand
         self.switchState({state: c_stalk_state, data: uid});
     };
@@ -141,15 +145,15 @@ function FSM() {
     // Init FSM
     // Bind focus and blur to all input fields
     var _focus_input = function (elm) {
-        if ($(elm).attr('def_label') == $(elm).val()) {
-            $(elm).val('');
+        if ($(this).attr('def_label') == $(this).val()) {
+            $(this).val('');
         }
         return false;
     };
 
     var _blur_input = function (elm) {
-        if ($(elm).val() == '') {
-            $(elm).val($(elm).attr('def_label'));
+        if ($(this).val() == '') {
+            $(this).val($(this).attr('def_label'));
         }
         return false;
     };
