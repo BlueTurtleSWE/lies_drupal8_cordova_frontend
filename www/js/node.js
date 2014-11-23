@@ -53,6 +53,7 @@ function Node(i_node) {
     // 3) nid, cb (optional)
 
     // Private vars
+    var self = this;
     var _node_hal = null;
     var _ready = false;
 
@@ -64,26 +65,6 @@ function Node(i_node) {
 
     // Private functions
     var _always_cb = i_node.cb ? i_node.cb : function () {
-    };
-
-    var _get_title = function () {
-        var ret_val = _node_hal.title[0].value;
-        bugme.log("Title: " + ret_val);
-        return ret_val;
-    };
-
-    var _get_image = function () {
-        var ret_val = _node_hal._links[_img_field] ? _node_hal._links[_img_field][0].href : null;
-        bugme.log("Image: " + ret_val);
-        return ret_val;
-    };
-
-    var _get_user = function () {
-        var user_link = _node_hal._links[_user_field][0].href;
-        var match = user_link.match(/\d+$/);
-        var ret_val = parseInt(match[0]);
-        bugme.log("User id: " + ret_val);
-        return ret_val;
     };
 
     var _get_created = function () {
@@ -120,9 +101,23 @@ function Node(i_node) {
     };
 
     // Public functions
-    this.getTitle = _get_title;
-    this.getImage = _get_image;
-    this.getUser = _get_user;
+    this.getTitle = function () {
+        var ret_val = _node_hal.title[0].value;
+        bugme.log("Title: " + ret_val);
+        return ret_val;
+    };
+
+    this.getImage = function () {
+        return _node_hal._links[_img_field] ? _node_hal._links[_img_field][0].href : null;
+    };
+
+    this.getUserId = function () {
+        var user_link = _node_hal._links[_user_field][0].href;
+        var match = user_link.match(/\d+$/);
+        var ret_val = parseInt(match[0]);
+        bugme.log("User id: " + ret_val);
+        return ret_val;
+    };
 
     this.getJSON = function () {
         return JSON.stringify(_node_hal);
@@ -130,9 +125,9 @@ function Node(i_node) {
 
     this.render = function () {
         return '<div id="' + _get_created() + '" class="item-lie">'
-        + '<div class="item-title">' + _get_title() + '</div>'
-        + (_get_image() ? ('<img class="item-proof" src="' + _get_image() + '"/>') : '')
-        + '<a href="#" onClick="g_fsm.stalk(' + _get_user() + ');">'
+        + '<div class="item-title">' + self.getTitle() + '</div>'
+        + (self.getImage() ? ('<img class="item-proof" src="' + self.getImage() + '"/>') : '')
+        + '<a href="#" onClick="g_fsm.stalk(' + self.getUserId() + ');">'
         + '<div class="item-liar">Who lied?</div></a>'
         + '</div>';
     };
