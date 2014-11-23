@@ -102,9 +102,7 @@ function Node(i_node) {
 
     // Public functions
     this.getTitle = function () {
-        var ret_val = _node_hal.title[0].value;
-        bugme.log("Title: " + ret_val);
-        return ret_val;
+        return _node_hal.title[0].value;
     };
 
     this.getImage = function () {
@@ -115,7 +113,6 @@ function Node(i_node) {
         var user_link = _node_hal._links[_user_field][0].href;
         var match = user_link.match(/\d+$/);
         var ret_val = parseInt(match[0]);
-        bugme.log("User id: " + ret_val);
         return ret_val;
     };
 
