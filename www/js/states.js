@@ -171,16 +171,16 @@ function LoginState(i_state) {
     // Private funcs
     function _cleanup() {
         // Reset all input fields
-        $('#identity-lies input').each(function () {
-            this.val(this.attr('def_label'));
-            this.off(event_sel);
-            this.off('focus');
-            this.off('blur');
+        $('#identity-lies input').each(function (elm) {
+            $(elm).val($(elm).attr('def_label'));
+            $(elm).off(event_sel);
+            $(elm).off('focus');
+            $(elm).off('blur');
         });
         // Show all buttons, and turn off their actions
-        $('#identity-lies a').each(function () {
-            this.show();
-            this.off(event_sel);
+        $('#identity-lies a').each(function (elm) {
+            $(elm).show();
+            $(elm).off(event_sel);
         })
     }
 
@@ -239,11 +239,13 @@ function LoginState(i_state) {
 
         // Activate buttons
         btn_edit.on(event_sel, function () {
-            alert('Edit settings not implemented')
+            alert('Edit settings not implemented');
+            return false;
         });
         btn_logout.on(event_sel, function () {
             current_user = null;
             self.done();
+            return false;
         });
         // Hide inactive
         btn_login.hide();
@@ -251,18 +253,24 @@ function LoginState(i_state) {
     } else {
         // Activate buttons
         btn_login.on(event_sel, function () {
-            if (!_verify_input()) return;
-            current_user = new User({name: input_alias.val(), pass: input_pass.val(), cb: self.done});
+            console.log("Button login pressed");
+            if (_verify_input()) {
+                current_user = new User({name: input_alias.val(), pass: input_pass.val(), cb: self.done});
+            }
+            return false;
         });
-        btn_create.show(event_sel, function () {
-            if (!_verify_input(true)) return;
-            current_user = new User({
-                name: input_alias.val(),
-                pass: input_pass.val(),
-                mail: input_email.val(),
-                edit: true,
-                cb: self.done
-            })
+        btn_create.on(event_sel, function () {
+            console.log("Button create user pressed");
+            if (_verify_input(true)) {
+                current_user = new User({
+                    name: input_alias.val(),
+                    pass: input_pass.val(),
+                    mail: input_email.val(),
+                    edit: true,
+                    cb: self.done
+                });
+            }
+            return false;
         });
         // Hide inactive
         btn_edit.hide();
@@ -488,13 +496,13 @@ function LieState(i_state) {
 
     function _cleanup() {
         // Reset all input fields
-        $('#tell-a-lie input').each(function () {
-            this.val(this.attr('def_label'));
+        $('#tell-a-lie input').each(function (elm) {
+            $(elm).val($(elm).attr('def_label'));
         });
         // Show all buttons, and turn off their actions
-        $('#tell-a-lie a').each(function () {
-            this.show();
-            this.off(event_sel);
+        $('#tell-a-lie a').each(function (elm) {
+            $(elm).show();
+            $(elm).off(event_sel);
         })
     }
 
@@ -540,10 +548,12 @@ function LieState(i_state) {
     // Bind functions to buttons and input fields
     btn_tell.on(event_sel, function () {
         self.done();
+        return false;
     });
 
     btn_snap.on(event_sel, function () {
         self.parent().switchState({state: c_image_state, sibling: self});
+        return false;
     });
 }
 

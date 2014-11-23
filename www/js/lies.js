@@ -20,8 +20,6 @@ document.addEventListener('deviceready', function () {
     if (!window.btoa) window.btoa = $.base64.btoa;
     if (!window.atob) window.atob = $.base64.atob;
 
-    document.addEventListener('backbutton', g_fsm.cancel, false); // Fix the back button on Android
-
     // Start the Finite State Machine
     g_fsm = new FSM();
 }, false);
@@ -40,7 +38,7 @@ function FSM() {
     var current_user = null;
     var event_sel = "click tap";
     var current_state_id = c_init_state;
-    var browse = new BrowseState({parent: this, next_state: c_browse_state});
+    var browse = new BrowseState({parent: self, state: c_browse_state});
     var current_state = null;
     var spinner = $('#spinner');
     var btn_refresh = $('#btn-refresh');
@@ -92,6 +90,7 @@ function FSM() {
             case c_browse_state:
                 $.mobile.changePage('#latest-lies', 'slide', true, true);
                 current_state = browse;
+                current_state.update();
                 break;
             case c_stalk_state:
                 $.mobile.changePage('#check-a-liar', 'slide', true, true);
@@ -109,9 +108,8 @@ function FSM() {
                 current_state = i_switch.resume ? i_switch.resume : new LieState({parent: self});
                 break;
             default:
-                throw ( new Error("Unknown state:" + current_state_id) );
+                throw ( new Error("Unknown state:" + current_state_id + "\n" + dump(i_switch)) );
         }
-        current_state.update();
     };
 
     this.setUser = function (user) {
@@ -136,37 +134,47 @@ function FSM() {
         current_state.cancel();
     };
 
+    this.stalk = function (uid) { // Convenient short-hand
+        self.switchState({state: c_stalk_state, data: uid});
+    };
+
     // Init FSM
     // Bind focus and blur to all input fields
-    $('input').each(function () {
-        this.on('focus', _focus_input);
-        this.on('blur', _blur_input);
-    });
-
-    function _focus_input(elm) {
+    var _focus_input = function (elm) {
         if ($(elm).attr('def_label') == $(elm).val()) {
             $(elm).val('');
         }
-    }
+        return false;
+    };
 
-    function _blur_input(elm) {
+    var _blur_input = function (elm) {
         if ($(elm).val() == '') {
             $(elm).val($(elm).attr('def_label'));
         }
-    }
+        return false;
+    };
+
+    $('input').each(function () {
+        $(this).on('focus', _focus_input);
+        $(this).on('blur', _blur_input);
+    });
 
     // Bind the toolbar buttons here - instead of in index.html
     btn_add.on(event_sel, function () {
-        self.switchState({next: c_submit_state});
+        self.switchState({state: c_submit_state});
+        return false;
     });
     btn_user.on(event_sel, function () {
-        self.switchState({next: c_login_state});
+        self.switchState({state: c_login_state});
+        return false;
     });
     btn_back.on(event_sel, function () {
         current_state.cancel();
+        return false;
     });
     btn_refresh.on(event_sel, function () {
         current_state.update();
+        return false;
     });
 
     if (window.localStorage) {
@@ -176,8 +184,8 @@ function FSM() {
         }
     }
 
+    document.addEventListener('backbutton', self.cancel, false); // Fix the back button on Android
+
     // Let's get the show on the road
     self.switchState({state: c_browse_state});
 }
-
-

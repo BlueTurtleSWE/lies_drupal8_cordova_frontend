@@ -141,11 +141,11 @@ function Node(i_node) {
 
     this.render = function () {
         return '<div id="' + _get_created() + '" class="item-lie">'
-            + '<div class="item-title">' + _get_title() + '</div>'
-            + (_get_image() ? ('<img class="item-proof" src="' + _get_image() + '"/>') : '')
-            + '<a href="#" onClick="focus_stalk(' + _get_user() + ');">'
-            + '<div class="item-liar">Who lied?</div></a>'
-            + '</div>';
+        + '<div class="item-title">' + _get_title() + '</div>'
+        + (_get_image() ? ('<img class="item-proof" src="' + _get_image() + '"/>') : '')
+        + '<a href="#" onClick="g_fsm.stalk(' + _get_user() + ');">'
+        + '<div class="item-liar">Who lied?</div></a>'
+        + '</div>';
     };
 
     this.isReady = function () {
