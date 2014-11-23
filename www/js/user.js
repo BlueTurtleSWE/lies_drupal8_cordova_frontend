@@ -38,21 +38,9 @@ function User(i_user) {
         xhr.setRequestHeader("Authorization", g_admin_login_base64);
     };
 
-    var _get_name = function () {
-        var ret_val = _user_hal.name[0].value;
-        bugme.log("Name: " + ret_val);
-        return ret_val;
-    };
-
     var _get_pass = function () {
         var ret_val = _user_hal.pass[0].value;
         bugme.log("Pass: " + ret_val);
-        return ret_val;
-    };
-
-    var _user_auth = function () {
-        var ret_val = 'Basic ' + btoa(_get_name() + ':' + _get_pass());
-        bugme.log('Auth: ' + ret_val);
         return ret_val;
     };
 
@@ -84,8 +72,17 @@ function User(i_user) {
     };
 
     // Public functions
-    this.getName = _get_name;
-    this.getAuth = _user_auth;
+    this.getName = function () {
+        var ret_val = _user_hal.name[0].value;
+        bugme.log("Name: " + ret_val);
+        return ret_val;
+    };
+
+    this.getAuth = function () {
+        var ret_val = 'Basic ' + btoa(self.getName() + ':' + _get_pass());
+        bugme.log('Auth: ' + ret_val);
+        return ret_val;
+    };
 
     this.getMail = function () {
         return _user_hal.mail[0].value;
@@ -96,7 +93,7 @@ function User(i_user) {
     };
 
     this.render = function () {
-        return '<div class="item-lie"><div class="item-title">The Liar is: ' + _get_name() + "</div></div>";
+        return '<div class="item-lie"><div class="item-title">The Liar is: ' + self.getName() + "</div></div>";
     };
 
     this.isReady = function () {
@@ -153,7 +150,7 @@ function User(i_user) {
         bugme.log('Test dest:' + test_dest);
         $.ajax({
             beforeSend: function (xhr) {
-                xhr.setRequestHeader("Authorization", _user_auth());
+                xhr.setRequestHeader("Authorization", self.getAuth());
             },
             headers: {
                 Accept: 'application/hal+json'
@@ -165,6 +162,4 @@ function User(i_user) {
     } else {
         throw(new Error("Invalid members of user object"));
     }
-
-    return this;
 }

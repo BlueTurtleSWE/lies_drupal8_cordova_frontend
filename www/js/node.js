@@ -180,6 +180,4 @@ function Node(i_node) {
     } else {
         throw ( new Error("Invalid members of node initializing object") );
     }
-
-    return this;
 }
