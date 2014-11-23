@@ -329,8 +329,8 @@ function ImageState(i_state) {
     // Private funcs
     function _cleanup() {
         bugme.log("ImageState _cleanup called");
-        proof_elm.attr('src', proof_elm.attr('def_src'));
         sibling = null;
+        spinner.hide();
     }
 
     function _upload_image() {
@@ -408,10 +408,11 @@ function ImageState(i_state) {
 
     function _success_form_upload(data) {
         if (!alive) return;
+        var response = JSON.parse(data.response);
         if (typeof(response) == "object" && response.uuid) {
-            sibling.setProof(data.response, self);
+            sibling.setProof(response, self);
         } else {
-            bugme.log("Bad image upload response\n" + bugme.dump(data.response))
+            bugme.log("Bad image upload response\n" + bugme.dump(response))
         }
         _cleanup();
     }
@@ -502,6 +503,7 @@ function LieState(i_state) {
     var input_lie = $('#brand-new-lies');
     var btn_tell = $('#tell-the-world');
     var btn_snap = $('#get-your-proof');
+    var proof_elm = $('#your-proof');
     var event_sel = "click tap";
     var sibling = null;
     var node = null;
@@ -526,6 +528,7 @@ function LieState(i_state) {
             $(this).show();
             $(this).off(event_sel);
         });
+        proof_elm.attr('src', proof_elm.attr('def_src'));
         sibling = null;
         bugme.log("LieState _cleanup finished");
     }
@@ -562,8 +565,8 @@ function LieState(i_state) {
 
         var node_input = {title: input_lie.val(), cb: _submit_cb};
         if (proof) {
-            node_input.img_uri = proof.replace('public://', proof_base_uri);
-            node_input.img_uuid = proof.uri;
+            node_input.img_uri = proof.uri.replace('public://', proof_base_uri);
+            node_input.img_uuid = proof.uuid;
         }
         node = new Node(node_input);
 
