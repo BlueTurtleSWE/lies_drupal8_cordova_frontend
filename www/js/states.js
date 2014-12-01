@@ -107,7 +107,9 @@ function StalkState(i_state) {
 
     // Private vars and consts
     var self = this;
+    var current_user = this.parent().user();
     var stalk_user = new User({uid: i_state.stalk_uid, cb: _user_cb}); // Load user to stalk
+    var user_lies_uri = c_web_site + '/latest-lies-by/'+i_state.stalk_uid;
     var list_elm = $('#list-of-liars-lies');
     var spinner = $('#spinner');
 
@@ -115,10 +117,11 @@ function StalkState(i_state) {
     function _user_cb(msg) {
         if (stalk_user.isReady()) {
             list_elm.append(stalk_user.render());
+            self.update();
         } else {
             list_elm.append('<p>Error!!!!</p><p>'+msg+'</p>');
+            spinner.hide();
         }
-        spinner.hide();
     }
 
     function _cleanup() {
@@ -126,13 +129,45 @@ function StalkState(i_state) {
         list_elm.empty();
     }
 
+    function _success(response) {
+        list_elm.empty();
+        list_elm.append(stalk_user.render());
+        for (var i = 0; i < response.length; ++i) {
+            var node = new Node(response[i]);
+            list_elm.append(node.render);
+        }
+        spinner.hide();
+    }
+
+    function _fail(xhr, err, exception) {
+        list_elm.empty();
+        if (stalk_user && stalk_user.isReady()) {
+            list_elm.append(stalk_user.render());
+        }
+        list_elm.append("<p>Mucho error!</p><p>"+err+"</p>");
+        spinner.hide();
+    }
+
     // Public funcs
     this.name = function () {
         return this.constructor.name;
     }
 
-    // TODO: Implement loading of lies here
-    this.update = false;
+    // Load this users lies
+    this.update = function () {
+        bugme.log("Stalk update");
+        spinner.show();
+        $.ajax({
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", current_user.getAuth());
+            },
+            headers: {
+                Accept: "application/hal+json"
+            },
+            type: 'GET',
+            url: user_lies_uri
+        }).done(_success).fail(_fail);
+    };
 
     this.done = function () {
         bugme.log("Stalk done");
